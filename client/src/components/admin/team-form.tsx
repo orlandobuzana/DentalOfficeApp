@@ -1,3 +1,4 @@
+import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -9,6 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { insertTeamMemberSchema } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { Upload, X, Loader2 } from "lucide-react";
 import { z } from "zod";
 
 const teamFormSchema = insertTeamMemberSchema.extend({
@@ -25,6 +27,9 @@ interface TeamFormProps {
 export default function TeamForm({ onClose, member }: TeamFormProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(member?.imageUrl || null);
 
   const form = useForm<TeamFormData>({
     resolver: zodResolver(teamFormSchema),
@@ -39,11 +44,61 @@ export default function TeamForm({ onClose, member }: TeamFormProps) {
     },
   });
 
+  // Handle file selection
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        toast({
+          title: "Error",
+          description: "File size must be less than 5MB",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Error", 
+          description: "Please select an image file",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      setSelectedFile(file);
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+    }
+  };
+
+  // Convert file to base64 for simple storage
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = error => reject(error);
+    });
+  };
+
   const createMutation = useMutation({
     mutationFn: async (data: TeamFormData) => {
+      let finalData = { ...data };
+      
+      // If a file is selected, convert to base64 and use as imageUrl
+      if (selectedFile) {
+        try {
+          const base64 = await fileToBase64(selectedFile);
+          finalData.imageUrl = base64;
+        } catch (error) {
+          throw new Error('Failed to process image');
+        }
+      }
+      
       const url = member ? `/api/team/${member.id}` : '/api/team';
       const method = member ? 'PUT' : 'POST';
-      await apiRequest(method, url, data);
+      await apiRequest(method, url, finalData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/team'] });
@@ -163,19 +218,84 @@ export default function TeamForm({ onClose, member }: TeamFormProps) {
           />
         </div>
 
-        <FormField
-          control={form.control}
-          name="imageUrl"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Image URL</FormLabel>
-              <FormControl>
-                <Input {...field} value={field.value || ''} placeholder="https://example.com/photo.jpg" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+        {/* Photo Upload Section */}
+        <div className="space-y-4">
+          <FormLabel>Profile Photo</FormLabel>
+          
+          {/* Photo Preview */}
+          {previewUrl && (
+            <div className="relative w-32 h-32 mx-auto">
+              <img
+                src={previewUrl}
+                alt="Profile preview"
+                className="w-full h-full object-cover rounded-lg border-2 border-gray-200"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  setPreviewUrl(null);
+                  setSelectedFile(null);
+                  form.setValue('imageUrl', '');
+                }}
+                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           )}
-        />
+          
+          {/* Upload Button */}
+          <div className="flex flex-col items-center space-y-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center space-x-2"
+            >
+              <Upload className="w-4 h-4" />
+              <span>{previewUrl ? 'Change Photo' : 'Upload Photo'}</span>
+            </Button>
+            <p className="text-sm text-gray-500">
+              Upload a professional photo (max 5MB, JPG/PNG)
+            </p>
+            
+            {/* Hidden file input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+          </div>
+          
+          {/* Alternative: Image URL input */}
+          <div className="pt-4 border-t">
+            <FormField
+              control={form.control}
+              name="imageUrl"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Or enter Image URL</FormLabel>
+                  <FormControl>
+                    <Input 
+                      {...field} 
+                      value={field.value || ''} 
+                      placeholder="https://example.com/photo.jpg"
+                      onChange={(e) => {
+                        field.onChange(e);
+                        if (e.target.value && !selectedFile) {
+                          setPreviewUrl(e.target.value);
+                        }
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
 
         <div className="flex justify-end space-x-2 pt-4">
           <Button type="button" variant="outline" onClick={onClose}>
