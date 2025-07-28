@@ -1,0 +1,151 @@
+import { useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+import Navigation from "@/components/navigation";
+import Calendar from "@/components/calendar";
+import Chatbot from "@/components/chatbot";
+import { useQuery } from "@tanstack/react-query";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CalendarCheck, FileText, CreditCard, Download } from "lucide-react";
+import { isUnauthorizedError } from "@/lib/authUtils";
+
+interface Appointment {
+  id: string;
+  doctorName: string;
+  treatmentType: string;
+  appointmentDate: string;
+  appointmentTime: string;
+  status: string;
+}
+
+export default function Home() {
+  const { toast } = useToast();
+  const { user, isAuthenticated, isLoading } = useAuth();
+
+  // Redirect to home if not authenticated
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      toast({
+        title: "Unauthorized",
+        description: "You are logged out. Logging in again...",
+        variant: "destructive",
+      });
+      setTimeout(() => {
+        window.location.href = "/api/login";
+      }, 500);
+      return;
+    }
+  }, [isAuthenticated, isLoading, toast]);
+
+  const { data: appointments, isLoading: appointmentsLoading } = useQuery<Appointment[]>({
+    queryKey: ["/api/appointments"],
+    retry: false,
+    enabled: !!user,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  const upcomingAppointments = appointments?.filter(apt => 
+    apt.status !== 'cancelled' && new Date(`${apt.appointmentDate}T${apt.appointmentTime}`) > new Date()
+  ).slice(0, 2) || [];
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Navigation />
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Welcome Section */}
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+                Welcome back, {(user as any)?.firstName || 'Patient'}!
+              </h2>
+              <p className="text-gray-600">Here's what's coming up for your dental care.</p>
+            </div>
+
+            {/* Interactive Calendar */}
+            <Calendar />
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Upcoming Appointments */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Upcoming Appointments</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {appointmentsLoading ? (
+                  <div className="space-y-3">
+                    <div className="animate-pulse bg-gray-200 h-16 rounded"></div>
+                    <div className="animate-pulse bg-gray-200 h-16 rounded"></div>
+                  </div>
+                ) : upcomingAppointments.length > 0 ? (
+                  <div className="space-y-3">
+                    {upcomingAppointments.map((appointment) => (
+                      <div key={appointment.id} className="p-3 bg-blue-50 rounded-lg border-l-4 border-blue-600">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">{appointment.treatmentType}</p>
+                            <p className="text-xs text-gray-600">{appointment.doctorName}</p>
+                          </div>
+                          <span className="text-xs text-gray-500">
+                            {new Date(appointment.appointmentDate).toLocaleDateString('en-US', { 
+                              month: 'short', 
+                              day: 'numeric' 
+                            })}, {appointment.appointmentTime}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500">No upcoming appointments</p>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Quick Actions */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Quick Actions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center">
+                    <FileText className="w-4 h-4 mr-3 text-gray-400" />
+                    View Medical Records
+                  </button>
+                  <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center">
+                    <CreditCard className="w-4 h-4 mr-3 text-gray-400" />
+                    Payment History
+                  </button>
+                  <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center">
+                    <Download className="w-4 h-4 mr-3 text-gray-400" />
+                    Download Forms
+                  </button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+
+      <Chatbot />
+    </div>
+  );
+}
