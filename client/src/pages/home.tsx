@@ -48,7 +48,17 @@ export default function Home() {
 
   const promoteToAdminMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest('/api/auth/promote-admin', 'POST');
+      const response = await fetch('/api/auth/promote-admin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to promote to admin');
+      }
+      return response.json();
     },
     onSuccess: () => {
       toast({
