@@ -48,9 +48,7 @@ export default function Home() {
 
   const promoteToAdminMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest('/api/auth/promote-admin', {
-        method: 'POST',
-      });
+      await apiRequest('/api/auth/promote-admin', 'POST');
     },
     onSuccess: () => {
       toast({
