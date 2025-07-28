@@ -266,6 +266,132 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post('/api/timeslots', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const timeSlot = await storage.createTimeSlot(req.body);
+      res.json(timeSlot);
+    } catch (error) {
+      console.error("Error creating time slot:", error);
+      res.status(500).json({ message: "Failed to create time slot" });
+    }
+  });
+
+  app.post('/api/timeslots/bulk', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const { timeSlots } = req.body;
+      const results = await storage.createTimeSlots(timeSlots);
+      res.json(results);
+    } catch (error) {
+      console.error("Error creating time slots:", error);
+      res.status(500).json({ message: "Failed to create time slots" });
+    }
+  });
+
+  app.patch('/api/timeslots/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const { id } = req.params;
+      const timeSlot = await storage.updateTimeSlot(id, req.body);
+      res.json(timeSlot);
+    } catch (error) {
+      console.error("Error updating time slot:", error);
+      res.status(500).json({ message: "Failed to update time slot" });
+    }
+  });
+
+  app.delete('/api/timeslots/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const { id } = req.params;
+      await storage.deleteTimeSlot(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting time slot:", error);
+      res.status(500).json({ message: "Failed to delete time slot" });
+    }
+  });
+
+  // Chatbot response routes
+  app.get('/api/chatbot-responses', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const responses = await storage.getChatbotResponses();
+      res.json(responses);
+    } catch (error) {
+      console.error("Error fetching chatbot responses:", error);
+      res.status(500).json({ message: "Failed to fetch chatbot responses" });
+    }
+  });
+
+  app.post('/api/chatbot-responses', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const response = await storage.createChatbotResponse(req.body);
+      res.json(response);
+    } catch (error) {
+      console.error("Error creating chatbot response:", error);
+      res.status(500).json({ message: "Failed to create chatbot response" });
+    }
+  });
+
+  app.put('/api/chatbot-responses/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const { id } = req.params;
+      const response = await storage.updateChatbotResponse(id, req.body);
+      res.json(response);
+    } catch (error) {
+      console.error("Error updating chatbot response:", error);
+      res.status(500).json({ message: "Failed to update chatbot response" });
+    }
+  });
+
+  app.delete('/api/chatbot-responses/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const { id } = req.params;
+      await storage.deleteChatbotResponse(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting chatbot response:", error);
+      res.status(500).json({ message: "Failed to delete chatbot response" });
+    }
+  });
+
   // Initialize some default data
   app.post('/api/initialize', isAuthenticated, async (req: any, res) => {
     try {

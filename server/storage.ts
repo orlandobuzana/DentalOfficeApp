@@ -47,10 +47,15 @@ export interface IStorage {
   // Chatbot operations
   getChatbotResponses(): Promise<ChatbotResponse[]>;
   findChatbotResponse(keywords: string[]): Promise<ChatbotResponse | undefined>;
+  createChatbotResponse(response: InsertChatbotResponse): Promise<ChatbotResponse>;
+  updateChatbotResponse(id: string, response: Partial<InsertChatbotResponse>): Promise<ChatbotResponse | undefined>;
+  deleteChatbotResponse(id: string): Promise<void>;
   
   // Time slot operations
   getTimeSlots(date: string): Promise<TimeSlot[]>;
-  updateTimeSlot(id: string, isAvailable: boolean): Promise<TimeSlot | undefined>;
+  createTimeSlot(slot: InsertTimeSlot): Promise<TimeSlot>;
+  updateTimeSlot(id: string, updates: Partial<InsertTimeSlot>): Promise<TimeSlot | undefined>;
+  deleteTimeSlot(id: string): Promise<void>;
   createTimeSlots(slots: InsertTimeSlot[]): Promise<TimeSlot[]>;
 }
 
@@ -212,6 +217,30 @@ export class DatabaseStorage implements IStorage {
     return bestMatch;
   }
 
+  async createChatbotResponse(responseData: InsertChatbotResponse): Promise<ChatbotResponse> {
+    const [response] = await db
+      .insert(chatbotResponses)
+      .values(responseData)
+      .returning();
+    return response;
+  }
+
+  async updateChatbotResponse(id: string, responseData: Partial<InsertChatbotResponse>): Promise<ChatbotResponse | undefined> {
+    const [updated] = await db
+      .update(chatbotResponses)
+      .set({ ...responseData, updatedAt: new Date() })
+      .where(eq(chatbotResponses.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteChatbotResponse(id: string): Promise<void> {
+    await db
+      .update(chatbotResponses)
+      .set({ isActive: false, updatedAt: new Date() })
+      .where(eq(chatbotResponses.id, id));
+  }
+
   // Time slot operations
   async getTimeSlots(date: string): Promise<TimeSlot[]> {
     return await db
@@ -221,13 +250,27 @@ export class DatabaseStorage implements IStorage {
       .orderBy(asc(timeSlots.time));
   }
 
-  async updateTimeSlot(id: string, isAvailable: boolean): Promise<TimeSlot | undefined> {
+  async createTimeSlot(slotData: InsertTimeSlot): Promise<TimeSlot> {
+    const [slot] = await db
+      .insert(timeSlots)
+      .values(slotData)
+      .returning();
+    return slot;
+  }
+
+  async updateTimeSlot(id: string, updates: Partial<InsertTimeSlot>): Promise<TimeSlot | undefined> {
     const [updated] = await db
       .update(timeSlots)
-      .set({ isAvailable })
+      .set(updates)
       .where(eq(timeSlots.id, id))
       .returning();
     return updated;
+  }
+
+  async deleteTimeSlot(id: string): Promise<void> {
+    await db
+      .delete(timeSlots)
+      .where(eq(timeSlots.id, id));
   }
 
   async createTimeSlots(slots: InsertTimeSlot[]): Promise<TimeSlot[]> {

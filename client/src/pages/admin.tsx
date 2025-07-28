@@ -4,11 +4,13 @@ import { useToast } from "@/hooks/use-toast";
 import Navigation from "@/components/navigation";
 import TeamForm from "@/components/admin/team-form";
 import ResourceForm from "@/components/admin/resource-form";
+import ChatbotManager from "@/components/admin/chatbot-manager";
+import CalendarManager from "@/components/admin/calendar-manager";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { CalendarCheck, Users, DollarSign, Clock, UserPlus, FileText, Calendar, Settings } from "lucide-react";
+import { CalendarCheck, Users, DollarSign, Clock, UserPlus, FileText, Calendar, Settings, MessageSquare } from "lucide-react";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -28,6 +30,8 @@ export default function Admin() {
   const queryClient = useQueryClient();
   const [showTeamForm, setShowTeamForm] = useState(false);
   const [showResourceForm, setShowResourceForm] = useState(false);
+  const [showChatbotManager, setShowChatbotManager] = useState(false);
+  const [showCalendarManager, setShowCalendarManager] = useState(false);
 
   // Redirect to home if not authenticated or not admin
   useEffect(() => {
@@ -316,19 +320,35 @@ export default function Admin() {
                   </DialogContent>
                 </Dialog>
 
-                <button className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-600 hover:bg-blue-50 transition-colors group">
+                <button 
+                  onClick={() => setShowCalendarManager(true)}
+                  className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-600 hover:bg-blue-50 transition-colors group"
+                >
                   <Calendar className="h-8 w-8 text-gray-400 group-hover:text-blue-600 mb-2 mx-auto" />
                   <p className="text-sm font-medium text-gray-700 group-hover:text-blue-600">Manage Calendar</p>
                 </button>
 
-                <button className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-600 hover:bg-blue-50 transition-colors group">
-                  <Settings className="h-8 w-8 text-gray-400 group-hover:text-blue-600 mb-2 mx-auto" />
-                  <p className="text-sm font-medium text-gray-700 group-hover:text-blue-600">Settings</p>
+                <button 
+                  onClick={() => setShowChatbotManager(true)}
+                  className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-600 hover:bg-blue-50 transition-colors group"
+                >
+                  <MessageSquare className="h-8 w-8 text-gray-400 group-hover:text-blue-600 mb-2 mx-auto" />
+                  <p className="text-sm font-medium text-gray-700 group-hover:text-blue-600">Manage Chatbot</p>
                 </button>
               </div>
             </CardContent>
           </Card>
         </div>
+
+        {/* Modal Components */}
+        <ChatbotManager 
+          isOpen={showChatbotManager} 
+          onClose={() => setShowChatbotManager(false)} 
+        />
+        <CalendarManager 
+          isOpen={showCalendarManager} 
+          onClose={() => setShowCalendarManager(false)} 
+        />
       </div>
     </div>
   );
