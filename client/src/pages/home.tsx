@@ -4,9 +4,11 @@ import { useToast } from "@/hooks/use-toast";
 import Navigation from "@/components/navigation";
 import Calendar from "@/components/calendar";
 import Chatbot from "@/components/chatbot";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarCheck, FileText, CreditCard, Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { CalendarCheck, FileText, CreditCard, Download, Shield } from "lucide-react";
 import { isUnauthorizedError } from "@/lib/authUtils";
 
 interface Appointment {
@@ -21,6 +23,7 @@ interface Appointment {
 export default function Home() {
   const { toast } = useToast();
   const { user, isAuthenticated, isLoading } = useAuth();
+  const queryClient = useQueryClient();
 
   // Redirect to home if not authenticated
   useEffect(() => {
@@ -41,6 +44,28 @@ export default function Home() {
     queryKey: ["/api/appointments"],
     retry: false,
     enabled: !!user,
+  });
+
+  const promoteToAdminMutation = useMutation({
+    mutationFn: async () => {
+      await apiRequest('/api/auth/promote-admin', {
+        method: 'POST',
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success!",
+        description: "You've been promoted to admin. Refresh the page to see admin options.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to promote to admin",
+        variant: "destructive",
+      });
+    },
   });
 
   if (isLoading) {
@@ -71,10 +96,25 @@ export default function Home() {
           {/* Welcome Section */}
           <div className="lg:col-span-2">
             <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-2">
-                Welcome back, {(user as any)?.firstName || 'Patient'}!
-              </h2>
-              <p className="text-gray-600">Here's what's coming up for your dental care.</p>
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+                    Welcome back, {(user as any)?.firstName || 'Patient'}!
+                  </h2>
+                  <p className="text-gray-600">Here's what's coming up for your dental care.</p>
+                </div>
+                {(user as any)?.role !== 'admin' && (
+                  <Button
+                    onClick={() => promoteToAdminMutation.mutate()}
+                    disabled={promoteToAdminMutation.isPending}
+                    variant="outline"
+                    size="sm"
+                  >
+                    <Shield className="w-4 h-4 mr-2" />
+                    {promoteToAdminMutation.isPending ? 'Promoting...' : 'Become Admin'}
+                  </Button>
+                )}
+              </div>
             </div>
 
             {/* Interactive Calendar */}
