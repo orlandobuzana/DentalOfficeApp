@@ -3,7 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Download, Play, Eye, Book } from "lucide-react";
+import { Download, Play, Eye, Book, ExternalLink } from "lucide-react";
+import { Link } from "wouter";
 
 interface Resource {
   id: string;
@@ -148,19 +149,29 @@ export default function Resources() {
                     <Badge className={getTypeColor(resource.type)}>
                       {resource.type}
                     </Badge>
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      className="text-blue-600 hover:text-blue-700"
-                      onClick={() => {
-                        if (resource.fileUrl) {
-                          window.open(resource.fileUrl, '_blank');
-                        }
-                      }}
-                    >
-                      {getTypeIcon(resource.type)}
-                      <span className="ml-1">{getActionText(resource.type)}</span>
-                    </Button>
+                    <div className="flex space-x-2">
+                      <Link href={`/resources/${resource.id}`}>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          className="text-blue-600 hover:text-blue-700"
+                        >
+                          <Eye className="w-4 h-4 mr-1" />
+                          View
+                        </Button>
+                      </Link>
+                      {resource.fileUrl && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          className="text-gray-600 hover:text-gray-700"
+                          onClick={() => window.open(resource.fileUrl, '_blank')}
+                        >
+                          {getTypeIcon(resource.type)}
+                          <span className="ml-1">{getActionText(resource.type)}</span>
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>

@@ -170,6 +170,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get('/api/resources/:id', async (req, res) => {
+    try {
+      const resources = await storage.getResources();
+      const resource = resources.find(r => r.id === req.params.id);
+      
+      if (!resource) {
+        return res.status(404).json({ message: "Resource not found" });
+      }
+      
+      res.json(resource);
+    } catch (error) {
+      console.error("Error fetching resource:", error);
+      res.status(500).json({ message: "Failed to fetch resource" });
+    }
+  });
+
   app.post('/api/resources', isAuthenticated, async (req: any, res) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);

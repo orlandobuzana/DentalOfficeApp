@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Heart, Calendar, Users, FileText, MessageCircle } from "lucide-react";
+import { Link } from "wouter";
 
 export default function Landing() {
   return (
@@ -17,13 +18,20 @@ export default function Landing() {
               Your comprehensive dental care solution with easy appointment booking, 
               patient portal, and educational resources all in one place.
             </p>
-            <Button 
-              onClick={() => window.location.href = '/api/login'}
-              size="lg"
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg"
-            >
-              Sign In to Get Started
-            </Button>
+            <div className="space-y-4">
+              <Button 
+                onClick={() => window.location.href = '/api/login'}
+                size="lg"
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg"
+              >
+                Sign In to Get Started
+              </Button>
+              <div>
+                <Link href="/forgot-password" className="text-blue-600 hover:text-blue-500 text-sm font-medium">
+                  Forgot your password?
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </div>
