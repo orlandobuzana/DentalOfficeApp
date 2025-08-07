@@ -30,6 +30,7 @@ Preferred communication style: Simple, everyday language.
 - **ORM**: Drizzle ORM with type-safe queries
 - **Schema Management**: Drizzle Kit for migrations and schema updates
 - **Connection**: Neon serverless connection pooling
+- **Core Tables**: Users, appointments, team members, resources, chatbot responses, time slots, procedures, promotions, forms
 
 ## Key Components
 
@@ -50,6 +51,9 @@ Preferred communication style: Simple, everyday language.
 - **Resource Management**: Upload and manage educational content
 - **Appointment Oversight**: View and manage all patient appointments
 - **Content Administration**: Manage chatbot responses and FAQs
+- **Procedures Management**: Define and manage dental procedures with pricing
+- **Promotions Management**: Create and manage special offers and discounts
+- **PDF Forms Management**: Upload and organize downloadable patient forms
 
 ### AI Chatbot
 - **Functionality**: Keyword-based response system for common dental questions

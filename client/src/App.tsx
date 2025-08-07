@@ -10,7 +10,6 @@ import Admin from "@/pages/admin";
 import Resources from "@/pages/resources";
 import ResourceDetail from "@/pages/resource-detail";
 import Team from "@/pages/team";
-import Forms from "@/pages/forms";
 import ForgotPassword from "@/pages/forgot-password";
 import NotFound from "@/pages/not-found";
 
@@ -31,7 +30,6 @@ function Router() {
           <Route path="/resources" component={Resources} />
           <Route path="/resources/:id" component={ResourceDetail} />
           <Route path="/team" component={Team} />
-          <Route path="/forms" component={Forms} />
         </>
       )}
       <Route component={NotFound} />
