@@ -213,6 +213,131 @@ export const insertFormSchema = createInsertSchema(forms).omit({
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
+
+// Patient Points and Achievements Tables
+export const patientPoints = pgTable("patient_points", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  points: integer("points").default(0).notNull(),
+  level: integer("level").default(1).notNull(),
+  totalPointsEarned: integer("total_points_earned").default(0).notNull(),
+  streakDays: integer("streak_days").default(0).notNull(),
+  lastActivityDate: timestamp("last_activity_date"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const achievements = pgTable("achievements", {
+  id: varchar("id").primaryKey(),
+  name: varchar("name").notNull(),
+  description: varchar("description").notNull(),
+  icon: varchar("icon").notNull(),
+  pointsReward: integer("points_reward").default(0).notNull(),
+  category: varchar("category").notNull(), // appointments, hygiene, referrals, etc.
+  requirement: integer("requirement").notNull(), // number needed to unlock
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const patientAchievements = pgTable("patient_achievements", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  achievementId: varchar("achievement_id").notNull().references(() => achievements.id, { onDelete: "cascade" }),
+  earnedAt: timestamp("earned_at").defaultNow(),
+  progress: integer("progress").default(0),
+});
+
+export const pointsHistory = pgTable("points_history", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  points: integer("points").notNull(),
+  action: varchar("action").notNull(), // appointment_completed, survey_completed, etc.
+  description: varchar("description").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const challenges = pgTable("challenges", {
+  id: varchar("id").primaryKey(),
+  name: varchar("name").notNull(),
+  description: varchar("description").notNull(),
+  icon: varchar("icon").notNull(),
+  pointsReward: integer("points_reward").notNull(),
+  type: varchar("type").notNull(), // daily, weekly, monthly
+  requirement: integer("requirement").notNull(),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date").notNull(),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const patientChallenges = pgTable("patient_challenges", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  challengeId: varchar("challenge_id").notNull().references(() => challenges.id, { onDelete: "cascade" }),
+  progress: integer("progress").default(0),
+  completed: boolean("completed").default(false),
+  completedAt: timestamp("completed_at"),
+  startedAt: timestamp("started_at").defaultNow(),
+});
+
+// Relations for gamification tables
+export const patientPointsRelations = relations(patientPoints, ({ one }) => ({
+  user: one(users, {
+    fields: [patientPoints.userId],
+    references: [users.id],
+  }),
+}));
+
+export const achievementsRelations = relations(achievements, ({ many }) => ({
+  patientAchievements: many(patientAchievements),
+}));
+
+export const patientAchievementsRelations = relations(patientAchievements, ({ one }) => ({
+  user: one(users, {
+    fields: [patientAchievements.userId],
+    references: [users.id],
+  }),
+  achievement: one(achievements, {
+    fields: [patientAchievements.achievementId],
+    references: [achievements.id],
+  }),
+}));
+
+export const pointsHistoryRelations = relations(pointsHistory, ({ one }) => ({
+  user: one(users, {
+    fields: [pointsHistory.userId],
+    references: [users.id],
+  }),
+}));
+
+export const challengesRelations = relations(challenges, ({ many }) => ({
+  patientChallenges: many(patientChallenges),
+}));
+
+export const patientChallengesRelations = relations(patientChallenges, ({ one }) => ({
+  user: one(users, {
+    fields: [patientChallenges.userId],
+    references: [users.id],
+  }),
+  challenge: one(challenges, {
+    fields: [patientChallenges.challengeId],
+    references: [challenges.id],
+  }),
+}));
+
+// Type exports for gamification
+export type PatientPoints = typeof patientPoints.$inferSelect;
+export type InsertPatientPoints = typeof patientPoints.$inferInsert;
+export type Achievement = typeof achievements.$inferSelect;
+export type InsertAchievement = typeof achievements.$inferInsert;
+export type PatientAchievement = typeof patientAchievements.$inferSelect;
+export type InsertPatientAchievement = typeof patientAchievements.$inferInsert;
+export type PointsHistory = typeof pointsHistory.$inferSelect;
+export type InsertPointsHistory = typeof pointsHistory.$inferInsert;
+export type Challenge = typeof challenges.$inferSelect;
+export type InsertChallenge = typeof challenges.$inferInsert;
+export type PatientChallenge = typeof patientChallenges.$inferSelect;
+export type InsertPatientChallenge = typeof patientChallenges.$inferInsert;
 export type InsertAppointment = z.infer<typeof insertAppointmentSchema>;
 export type Appointment = typeof appointments.$inferSelect;
 export type InsertTeamMember = z.infer<typeof insertTeamMemberSchema>;

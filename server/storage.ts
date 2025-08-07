@@ -8,6 +8,12 @@ import {
   procedures,
   promotions,
   forms,
+  patientPoints,
+  achievements,
+  patientAchievements,
+  pointsHistory,
+  challenges,
+  patientChallenges,
   type User,
   type UpsertUser,
   type InsertAppointment,
@@ -26,6 +32,18 @@ import {
   type Promotion,
   type InsertForm,
   type Form,
+  type PatientPoints,
+  type InsertPatientPoints,
+  type Achievement,
+  type InsertAchievement,
+  type PatientAchievement,
+  type InsertPatientAchievement,
+  type PointsHistory,
+  type InsertPointsHistory,
+  type Challenge,
+  type InsertChallenge,
+  type PatientChallenge,
+  type InsertPatientChallenge,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gte, desc, asc } from "drizzle-orm";
@@ -86,6 +104,19 @@ export interface IStorage {
   createForm(form: InsertForm): Promise<Form>;
   updateForm(id: string, form: Partial<InsertForm>): Promise<Form | undefined>;
   deleteForm(id: string): Promise<void>;
+  
+  // Gamification operations
+  getOrCreatePatientPoints(userId: string): Promise<PatientPoints>;
+  awardPoints(userId: string, points: number, action: string, description: string): Promise<PatientPoints>;
+  getPointsHistory(userId: string): Promise<PointsHistory[]>;
+  getAchievements(): Promise<Achievement[]>;
+  getPatientAchievements(userId: string): Promise<PatientAchievement[]>;
+  checkAndAwardAchievements(userId: string): Promise<PatientAchievement[]>;
+  getChallenges(): Promise<Challenge[]>;
+  getPatientChallenges(userId: string): Promise<PatientChallenge[]>;
+  updateChallengeProgress(userId: string, challengeId: string, progress: number): Promise<PatientChallenge | undefined>;
+  createChallenge(challenge: InsertChallenge): Promise<Challenge>;
+  createAchievement(achievement: InsertAchievement): Promise<Achievement>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -433,6 +464,219 @@ export class DatabaseStorage implements IStorage {
       .update(forms)
       .set({ isActive: false, updatedAt: new Date() })
       .where(eq(forms.id, id));
+  }
+
+  // Gamification operations
+  async getOrCreatePatientPoints(userId: string): Promise<PatientPoints> {
+    let [points] = await db.select().from(patientPoints).where(eq(patientPoints.userId, userId));
+    
+    if (!points) {
+      [points] = await db
+        .insert(patientPoints)
+        .values({ userId, points: 0, level: 1, totalPointsEarned: 0, streakDays: 0 })
+        .returning();
+    }
+    
+    return points;
+  }
+
+  async awardPoints(userId: string, points: number, action: string, description: string): Promise<PatientPoints> {
+    // Get or create patient points
+    const currentPoints = await this.getOrCreatePatientPoints(userId);
+    
+    // Calculate new points and level
+    const newTotalPoints = currentPoints.totalPointsEarned + points;
+    const newCurrentPoints = currentPoints.points + points;
+    const newLevel = Math.floor(newTotalPoints / 100) + 1; // 100 points per level
+    
+    // Update patient points
+    const [updatedPoints] = await db
+      .update(patientPoints)
+      .set({
+        points: newCurrentPoints,
+        totalPointsEarned: newTotalPoints,
+        level: newLevel,
+        lastActivityDate: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(patientPoints.userId, userId))
+      .returning();
+
+    // Record points history
+    await db.insert(pointsHistory).values({
+      userId,
+      points,
+      action,
+      description,
+    });
+
+    // Check for achievements
+    await this.checkAndAwardAchievements(userId);
+    
+    return updatedPoints;
+  }
+
+  async getPointsHistory(userId: string): Promise<PointsHistory[]> {
+    return await db
+      .select()
+      .from(pointsHistory)
+      .where(eq(pointsHistory.userId, userId))
+      .orderBy(desc(pointsHistory.createdAt));
+  }
+
+  async getAchievements(): Promise<Achievement[]> {
+    return await db
+      .select()
+      .from(achievements)
+      .where(eq(achievements.isActive, true))
+      .orderBy(asc(achievements.category), asc(achievements.requirement));
+  }
+
+  async getPatientAchievements(userId: string): Promise<PatientAchievement[]> {
+    return await db
+      .select()
+      .from(patientAchievements)
+      .where(eq(patientAchievements.userId, userId))
+      .orderBy(desc(patientAchievements.earnedAt));
+  }
+
+  async checkAndAwardAchievements(userId: string): Promise<PatientAchievement[]> {
+    const newAchievements: PatientAchievement[] = [];
+    const allAchievements = await this.getAchievements();
+    const existingAchievements = await this.getPatientAchievements(userId);
+    const existingIds = existingAchievements.map(a => a.achievementId);
+    
+    const patientPointsData = await this.getOrCreatePatientPoints(userId);
+    const totalAppointments = await this.getAppointmentsByPatient(userId);
+    const completedAppointments = totalAppointments.filter(a => a.status === 'completed');
+    
+    for (const achievement of allAchievements) {
+      if (existingIds.includes(achievement.id)) continue;
+      
+      let shouldAward = false;
+      let progress = 0;
+      
+      switch (achievement.category) {
+        case 'points':
+          progress = patientPointsData.totalPointsEarned;
+          shouldAward = progress >= achievement.requirement;
+          break;
+        case 'appointments':
+          progress = completedAppointments.length;
+          shouldAward = progress >= achievement.requirement;
+          break;
+        case 'level':
+          progress = patientPointsData.level;
+          shouldAward = progress >= achievement.requirement;
+          break;
+        case 'streak':
+          progress = patientPointsData.streakDays;
+          shouldAward = progress >= achievement.requirement;
+          break;
+      }
+      
+      if (shouldAward) {
+        const [newAchievement] = await db
+          .insert(patientAchievements)
+          .values({
+            userId,
+            achievementId: achievement.id,
+            progress: achievement.requirement,
+          })
+          .returning();
+        
+        // Award bonus points for achievement
+        if (achievement.pointsReward > 0) {
+          await this.awardPoints(userId, achievement.pointsReward, 'achievement', `Unlocked: ${achievement.name}`);
+        }
+        
+        newAchievements.push(newAchievement);
+      }
+    }
+    
+    return newAchievements;
+  }
+
+  async getChallenges(): Promise<Challenge[]> {
+    const now = new Date();
+    return await db
+      .select()
+      .from(challenges)
+      .where(and(
+        eq(challenges.isActive, true),
+        gte(challenges.endDate, now)
+      ))
+      .orderBy(asc(challenges.type), asc(challenges.endDate));
+  }
+
+  async getPatientChallenges(userId: string): Promise<PatientChallenge[]> {
+    return await db
+      .select()
+      .from(patientChallenges)
+      .where(eq(patientChallenges.userId, userId))
+      .orderBy(desc(patientChallenges.startedAt));
+  }
+
+  async updateChallengeProgress(userId: string, challengeId: string, progress: number): Promise<PatientChallenge | undefined> {
+    // Get or create patient challenge
+    let [patientChallenge] = await db
+      .select()
+      .from(patientChallenges)
+      .where(and(
+        eq(patientChallenges.userId, userId),
+        eq(patientChallenges.challengeId, challengeId)
+      ));
+
+    if (!patientChallenge) {
+      [patientChallenge] = await db
+        .insert(patientChallenges)
+        .values({ userId, challengeId, progress: 0 })
+        .returning();
+    }
+
+    // Get challenge details
+    const [challenge] = await db
+      .select()
+      .from(challenges)
+      .where(eq(challenges.id, challengeId));
+
+    if (!challenge) return undefined;
+
+    const newProgress = Math.min(progress, challenge.requirement);
+    const isCompleted = newProgress >= challenge.requirement && !patientChallenge.completed;
+
+    const [updatedChallenge] = await db
+      .update(patientChallenges)
+      .set({
+        progress: newProgress,
+        completed: isCompleted,
+        completedAt: isCompleted ? new Date() : patientChallenge.completedAt,
+      })
+      .where(eq(patientChallenges.id, patientChallenge.id))
+      .returning();
+
+    // Award points if challenge is completed
+    if (isCompleted) {
+      await this.awardPoints(userId, challenge.pointsReward, 'challenge', `Completed: ${challenge.name}`);
+    }
+
+    return updatedChallenge;
+  }
+
+  async createChallenge(challenge: InsertChallenge): Promise<Challenge> {
+    const [newChallenge] = await db
+      .insert(challenges)
+      .values(challenge)
+      .returning();
+    return newChallenge;
+  }
+
+  async createAchievement(achievement: InsertAchievement): Promise<Achievement> {
+    const [newAchievement] = await db
+      .insert(achievements)
+      .values(achievement)
+      .returning();
+    return newAchievement;
   }
 }
 

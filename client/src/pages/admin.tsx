@@ -334,11 +334,7 @@ export default function Admin() {
                     <DialogHeader>
                       <DialogTitle>Add Team Member</DialogTitle>
                     </DialogHeader>
-                    <TeamForm onClose={() => {
-                      setShowTeamForm(false);
-                      // Ensure we stay on the admin route
-                      window.history.replaceState(null, '', '/admin');
-                    }} />
+                    <TeamForm onClose={() => setShowTeamForm(false)} />
                   </DialogContent>
                 </Dialog>
 
@@ -353,11 +349,7 @@ export default function Admin() {
                     <DialogHeader>
                       <DialogTitle>Add Resource</DialogTitle>
                     </DialogHeader>
-                    <ResourceForm onClose={() => {
-                      setShowResourceForm(false);
-                      // Ensure we stay on the admin route
-                      window.history.replaceState(null, '', '/admin');
-                    }} />
+                    <ResourceForm onClose={() => setShowResourceForm(false)} />
                   </DialogContent>
                 </Dialog>
 
@@ -412,11 +404,7 @@ export default function Admin() {
               <h3 className="text-2xl font-bold text-gray-900">Procedures Management</h3>
               <Button
                 variant="outline"
-                onClick={() => {
-                  setShowProcedures(false);
-                  // Ensure we stay on the admin route
-                  window.history.replaceState(null, '', '/admin');
-                }}
+                onClick={() => setShowProcedures(false)}
               >
                 Close
               </Button>
@@ -431,11 +419,7 @@ export default function Admin() {
               <h3 className="text-2xl font-bold text-gray-900">Promotions Management</h3>
               <Button
                 variant="outline"
-                onClick={() => {
-                  setShowPromotions(false);
-                  // Ensure we stay on the admin route
-                  window.history.replaceState(null, '', '/admin');
-                }}
+                onClick={() => setShowPromotions(false)}
               >
                 Close
               </Button>
@@ -450,11 +434,7 @@ export default function Admin() {
               <h3 className="text-2xl font-bold text-gray-900">PDF Forms Management</h3>
               <Button
                 variant="outline"
-                onClick={() => {
-                  setShowForms(false);
-                  // Ensure we stay on the admin route
-                  window.history.replaceState(null, '', '/admin');
-                }}
+                onClick={() => setShowForms(false)}
               >
                 Close
               </Button>
@@ -466,19 +446,11 @@ export default function Admin() {
         {/* Modal Components */}
         <ChatbotManager 
           isOpen={showChatbotManager} 
-          onClose={() => {
-            setShowChatbotManager(false);
-            // Ensure we stay on the admin route
-            window.history.replaceState(null, '', '/admin');
-          }}
+          onClose={() => setShowChatbotManager(false)}
         />
         <CalendarManager 
           isOpen={showCalendarManager} 
-          onClose={() => {
-            setShowCalendarManager(false);
-            // Ensure we stay on the admin route
-            window.history.replaceState(null, '', '/admin');
-          }}
+          onClose={() => setShowCalendarManager(false)}
         />
       </div>
     </div>
