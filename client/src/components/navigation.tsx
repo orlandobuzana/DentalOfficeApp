@@ -22,6 +22,7 @@ export default function Navigation() {
   const navItems = [
     { path: '/', label: 'Patient Portal' },
     { path: '/resources', label: 'Resources' },
+    { path: '/forms', label: 'Forms' },
     { path: '/team', label: 'Our Team' },
   ];
 

@@ -130,6 +130,20 @@ export const promotions = pgTable("promotions", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Forms table for downloadable PDF forms
+export const forms = pgTable("forms", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: varchar("title").notNull(),
+  description: text("description").notNull(),
+  fileName: varchar("file_name").notNull(),
+  fileUrl: varchar("file_url").notNull(),
+  category: varchar("category").notNull(), // 'pre-appointment', 'post-treatment', 'insurance', 'general'
+  isActive: boolean("is_active").default(true),
+  displayOrder: integer("display_order").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   appointments: many(appointments),
@@ -190,6 +204,12 @@ export const insertPromotionSchema = createInsertSchema(promotions).omit({
   updatedAt: true,
 });
 
+export const insertFormSchema = createInsertSchema(forms).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -207,3 +227,5 @@ export type InsertProcedure = z.infer<typeof insertProcedureSchema>;
 export type Procedure = typeof procedures.$inferSelect;
 export type InsertPromotion = z.infer<typeof insertPromotionSchema>;
 export type Promotion = typeof promotions.$inferSelect;
+export type InsertForm = z.infer<typeof insertFormSchema>;
+export type Form = typeof forms.$inferSelect;

@@ -8,7 +8,8 @@ import {
   insertResourceSchema,
   insertTimeSlotSchema,
   insertProcedureSchema,
-  insertPromotionSchema
+  insertPromotionSchema,
+  insertFormSchema
 } from "@shared/schema";
 import { z } from "zod";
 
@@ -520,6 +521,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Forms routes
+  app.get('/api/forms', async (req, res) => {
+    try {
+      const forms = await storage.getForms();
+      res.json(forms);
+    } catch (error) {
+      console.error("Error fetching forms:", error);
+      res.status(500).json({ message: "Failed to fetch forms" });
+    }
+  });
+
+  app.get('/api/forms/category/:category', async (req, res) => {
+    try {
+      const forms = await storage.getActiveFormsByCategory(req.params.category);
+      res.json(forms);
+    } catch (error) {
+      console.error("Error fetching forms by category:", error);
+      res.status(500).json({ message: "Failed to fetch forms" });
+    }
+  });
+
+  app.post('/api/forms', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const formData = insertFormSchema.parse(req.body);
+      const form = await storage.createForm(formData);
+      res.json(form);
+    } catch (error) {
+      console.error("Error creating form:", error);
+      res.status(400).json({ message: "Failed to create form" });
+    }
+  });
+
+  app.put('/api/forms/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const formData = insertFormSchema.partial().parse(req.body);
+      const form = await storage.updateForm(req.params.id, formData);
+      res.json(form);
+    } catch (error) {
+      console.error("Error updating form:", error);
+      res.status(400).json({ message: "Failed to update form" });
+    }
+  });
+
+  app.delete('/api/forms/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      await storage.deleteForm(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting form:", error);
+      res.status(400).json({ message: "Failed to delete form" });
+    }
+  });
+
   // Initialize some default data
   app.post('/api/initialize', isAuthenticated, async (req: any, res) => {
     try {
@@ -646,7 +715,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.createPromotion(promotion);
       }
 
-      res.json({ success: true, message: "Default data initialized including procedures and promotions" });
+      // Add sample forms
+      const forms = [
+        {
+          title: "New Patient Registration Form",
+          description: "Complete patient information and medical history form for new patients",
+          fileName: "new_patient_registration.pdf",
+          fileUrl: "/forms/sample_new_patient_registration.pdf",
+          category: "pre-appointment",
+          displayOrder: 1,
+        },
+        {
+          title: "Insurance Information Form",
+          description: "Insurance details and coverage information form",
+          fileName: "insurance_information.pdf",
+          fileUrl: "/forms/sample_insurance_information.pdf",
+          category: "insurance",
+          displayOrder: 1,
+        },
+        {
+          title: "Post-Treatment Care Instructions",
+          description: "General care instructions to follow after dental procedures",
+          fileName: "post_treatment_care.pdf",
+          fileUrl: "/forms/sample_post_treatment_care.pdf",
+          category: "post-treatment",
+          displayOrder: 1,
+        },
+        {
+          title: "Consent for Treatment Form",
+          description: "Patient consent form for dental treatment procedures",
+          fileName: "treatment_consent.pdf",
+          fileUrl: "/forms/sample_treatment_consent.pdf",
+          category: "general",
+          displayOrder: 1,
+        },
+      ];
+
+      for (const form of forms) {
+        await storage.createForm(form);
+      }
+
+      res.json({ success: true, message: "Default data initialized including procedures, promotions, and forms" });
     } catch (error) {
       console.error("Error initializing data:", error);
       res.status(500).json({ message: "Failed to initialize data" });

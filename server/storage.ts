@@ -7,6 +7,7 @@ import {
   timeSlots,
   procedures,
   promotions,
+  forms,
   type User,
   type UpsertUser,
   type InsertAppointment,
@@ -23,6 +24,8 @@ import {
   type Procedure,
   type InsertPromotion,
   type Promotion,
+  type InsertForm,
+  type Form,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gte, desc, asc } from "drizzle-orm";
@@ -76,6 +79,13 @@ export interface IStorage {
   createPromotion(promotion: InsertPromotion): Promise<Promotion>;
   updatePromotion(id: string, promotion: Partial<InsertPromotion>): Promise<Promotion | undefined>;
   deletePromotion(id: string): Promise<void>;
+  
+  // Form operations
+  getForms(): Promise<Form[]>;
+  getActiveFormsByCategory(category: string): Promise<Form[]>;
+  createForm(form: InsertForm): Promise<Form>;
+  updateForm(id: string, form: Partial<InsertForm>): Promise<Form | undefined>;
+  deleteForm(id: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -377,6 +387,52 @@ export class DatabaseStorage implements IStorage {
       .update(promotions)
       .set({ isActive: false, updatedAt: new Date() })
       .where(eq(promotions.id, id));
+  }
+
+  // Form operations
+  async getForms(): Promise<Form[]> {
+    return await db
+      .select()
+      .from(forms)
+      .where(eq(forms.isActive, true))
+      .orderBy(asc(forms.category), asc(forms.displayOrder), asc(forms.title));
+  }
+
+  async getActiveFormsByCategory(category: string): Promise<Form[]> {
+    return await db
+      .select()
+      .from(forms)
+      .where(
+        and(
+          eq(forms.isActive, true),
+          eq(forms.category, category)
+        )
+      )
+      .orderBy(asc(forms.displayOrder), asc(forms.title));
+  }
+
+  async createForm(formData: InsertForm): Promise<Form> {
+    const [form] = await db
+      .insert(forms)
+      .values(formData)
+      .returning();
+    return form;
+  }
+
+  async updateForm(id: string, formData: Partial<InsertForm>): Promise<Form | undefined> {
+    const [updated] = await db
+      .update(forms)
+      .set({ ...formData, updatedAt: new Date() })
+      .where(eq(forms.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteForm(id: string): Promise<void> {
+    await db
+      .update(forms)
+      .set({ isActive: false, updatedAt: new Date() })
+      .where(eq(forms.id, id));
   }
 }
 

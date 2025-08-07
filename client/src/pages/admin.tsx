@@ -8,6 +8,8 @@ import ChatbotManager from "@/components/admin/chatbot-manager";
 import CalendarManager from "@/components/admin/calendar-manager";
 import { ProcedureList } from "@/components/admin/procedure-list";
 import { PromotionList } from "@/components/admin/promotion-list";
+import { FormUpload } from "@/components/admin/form-upload";
+import { FormsList } from "@/components/admin/forms-list";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -36,6 +38,7 @@ export default function Admin() {
   const [showCalendarManager, setShowCalendarManager] = useState(false);
   const [showProcedures, setShowProcedures] = useState(false);
   const [showPromotions, setShowPromotions] = useState(false);
+  const [showForms, setShowForms] = useState(false);
 
   // Redirect to home if not authenticated or not admin
   useEffect(() => {
@@ -355,6 +358,14 @@ export default function Admin() {
                   <Percent className="h-8 w-8 text-gray-400 group-hover:text-blue-600 mb-2 mx-auto" />
                   <p className="text-sm font-medium text-gray-700 group-hover:text-blue-600">Manage Promotions</p>
                 </button>
+
+                <button 
+                  onClick={() => setShowForms(true)}
+                  className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-600 hover:bg-blue-50 transition-colors group"
+                >
+                  <FileText className="h-8 w-8 text-gray-400 group-hover:text-blue-600 mb-2 mx-auto" />
+                  <p className="text-sm font-medium text-gray-700 group-hover:text-blue-600">Manage PDF Forms</p>
+                </button>
               </div>
             </CardContent>
           </Card>
@@ -388,6 +399,21 @@ export default function Admin() {
               </Button>
             </div>
             <PromotionList />
+          </div>
+        )}
+
+        {showForms && (
+          <div className="mt-8">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-2xl font-bold text-gray-900">PDF Forms Management</h3>
+              <Button
+                variant="outline"
+                onClick={() => setShowForms(false)}
+              >
+                Close
+              </Button>
+            </div>
+            <FormsList />
           </div>
         )}
 
