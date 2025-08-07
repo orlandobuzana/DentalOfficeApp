@@ -149,6 +149,10 @@ export default function Calendar() {
     .filter(slot => !selectedDoctor || slot.doctorName === selectedDoctor)
     .map(slot => slot.time);
 
+  // Fallback doctors list if no time slots are available
+  const fallbackDoctors = ["Dr. Sarah Johnson", "Dr. Mike Chen", "Dr. James Wilson"];
+  const doctorsList = doctors.length > 0 ? doctors : fallbackDoctors;
+
   return (
     <Card>
       <CardHeader>
@@ -264,7 +268,7 @@ export default function Calendar() {
                     <SelectValue placeholder="Select doctor" />
                   </SelectTrigger>
                   <SelectContent>
-                    {doctors.map(doctor => (
+                    {doctorsList.map(doctor => (
                       <SelectItem key={doctor} value={doctor}>
                         {doctor}
                       </SelectItem>
