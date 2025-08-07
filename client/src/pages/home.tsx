@@ -147,23 +147,11 @@ END:VCALENDAR`;
   };
 
   const upcomingAppointments = appointments?.filter(apt => {
-    // Parse the appointment time correctly - it comes in format like "10:30 AM"
-    const [time, period] = apt.appointmentTime.split(' ');
-    const [hours, minutes] = time.split(':').map(num => parseInt(num));
-    const hour24 = period === 'PM' && hours !== 12 ? hours + 12 : (period === 'AM' && hours === 12 ? 0 : hours);
-    
-    // Create date object correctly - use the appointment date as base
-    const appointmentDateTime = new Date(apt.appointmentDate + 'T00:00:00');
-    appointmentDateTime.setHours(hour24, minutes, 0, 0);
-    
-    const now = new Date();
-    
     // Include confirmed, pending, and other non-cancelled statuses
     const validStatuses = ['confirmed', 'pending', 'scheduled'];
-    const isUpcoming = appointmentDateTime > now;
     const isValidStatus = validStatuses.includes(apt.status.toLowerCase());
     
-    return isValidStatus && isUpcoming;
+    return isValidStatus;
   }).sort((a, b) => {
     // Sort by date and time, earliest first
     const parseDateTime = (appointment: any) => {
@@ -176,7 +164,7 @@ END:VCALENDAR`;
     };
     
     return parseDateTime(a).getTime() - parseDateTime(b).getTime();
-  }).slice(0, 3) || []; // Show up to 3 upcoming appointments
+  }).slice(0, 5) || []; // Show up to 5 appointments (including missed ones)
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -217,38 +205,60 @@ END:VCALENDAR`;
                   </div>
                 ) : upcomingAppointments.length > 0 ? (
                   <div className="space-y-3">
-                    {upcomingAppointments.map((appointment) => (
-                      <div key={appointment.id} className="p-4 bg-blue-50 rounded-lg border-l-4 border-blue-600">
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <p className="font-medium text-gray-900">{appointment.treatmentType}</p>
-                            <p className="text-sm text-gray-600">{appointment.doctorName}</p>
-                          </div>
-                          <div className="flex items-start gap-3">
-                            <div className="text-right">
-                              <p className="text-sm font-medium text-gray-900">
-                                {new Date(appointment.appointmentDate).toLocaleDateString('en-US', { 
-                                  weekday: 'long',
-                                  month: 'long', 
-                                  day: 'numeric' 
-                                })}
-                              </p>
-                              <p className="text-sm text-gray-600">{appointment.appointmentTime}</p>
+                    {upcomingAppointments.map((appointment) => {
+                      // Check if appointment time has passed
+                      const [time, period] = appointment.appointmentTime.split(' ');
+                      const [hours, minutes] = time.split(':').map(num => parseInt(num));
+                      const hour24 = period === 'PM' && hours !== 12 ? hours + 12 : (period === 'AM' && hours === 12 ? 0 : hours);
+                      
+                      const appointmentDateTime = new Date(appointment.appointmentDate + 'T00:00:00');
+                      appointmentDateTime.setHours(hour24, minutes, 0, 0);
+                      
+                      const now = new Date();
+                      const isPast = appointmentDateTime < now;
+                      
+                      return (
+                        <div key={appointment.id} className={`p-4 rounded-lg border-l-4 ${isPast ? 'bg-red-50 border-red-600' : 'bg-blue-50 border-blue-600'}`}>
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <p className="font-medium text-gray-900">{appointment.treatmentType}</p>
+                                {isPast && (
+                                  <span className="px-2 py-1 text-xs font-medium text-red-700 bg-red-100 rounded-full">
+                                    MISSED
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-sm text-gray-600">{appointment.doctorName}</p>
                             </div>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => createCalendarReminder(appointment)}
-                              className="flex items-center gap-1 px-2 py-1 h-8 text-xs"
-                              title="Add to Calendar"
-                            >
-                              <CalendarPlus className="w-3 h-3" />
-                              Remind
-                            </Button>
+                            <div className="flex items-start gap-3">
+                              <div className="text-right">
+                                <p className="text-sm font-medium text-gray-900">
+                                  {new Date(appointment.appointmentDate).toLocaleDateString('en-US', { 
+                                    weekday: 'long',
+                                    month: 'long', 
+                                    day: 'numeric' 
+                                  })}
+                                </p>
+                                <p className={`text-sm ${isPast ? 'text-red-600' : 'text-gray-600'}`}>{appointment.appointmentTime}</p>
+                              </div>
+                              {!isPast && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => createCalendarReminder(appointment)}
+                                  className="flex items-center gap-1 px-2 py-1 h-8 text-xs"
+                                  title="Add to Calendar"
+                                >
+                                  <CalendarPlus className="w-3 h-3" />
+                                  Remind
+                                </Button>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 ) : (
                   <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
