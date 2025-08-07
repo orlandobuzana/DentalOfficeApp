@@ -8,7 +8,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CalendarCheck, FileText, CreditCard, Download, Shield } from "lucide-react";
+import { CalendarCheck, FileText, CreditCard, Download, Shield, CalendarPlus } from "lucide-react";
 import { isUnauthorizedError } from "@/lib/authUtils";
 
 interface Appointment {
@@ -91,6 +91,61 @@ export default function Home() {
     return null;
   }
 
+  // Function to create calendar reminder
+  const createCalendarReminder = (appointment: Appointment) => {
+    const [time, period] = appointment.appointmentTime.split(' ');
+    const [hours, minutes] = time.split(':').map(num => parseInt(num));
+    const hour24 = period === 'PM' && hours !== 12 ? hours + 12 : (period === 'AM' && hours === 12 ? 0 : hours);
+    
+    const startDate = new Date(appointment.appointmentDate + 'T00:00:00');
+    startDate.setHours(hour24, minutes, 0, 0);
+    
+    const endDate = new Date(startDate);
+    endDate.setHours(startDate.getHours() + 1); // Assume 1 hour appointment
+    
+    // Format dates for calendar URL (YYYYMMDDTHHMMSS)
+    const formatDate = (date: Date) => {
+      return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    };
+    
+    const startDateTime = formatDate(startDate);
+    const endDateTime = formatDate(endDate);
+    
+    // Create calendar URL
+    const title = encodeURIComponent(`Dental Appointment - ${appointment.treatmentType}`);
+    const details = encodeURIComponent(`Appointment with ${appointment.doctorName} for ${appointment.treatmentType}`);
+    const location = encodeURIComponent('SmileCare Dental Clinic');
+    
+    // Google Calendar URL
+    const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startDateTime}/${endDateTime}&details=${details}&location=${location}`;
+    
+    // Outlook/ICS format for other calendar apps
+    const icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//SmileCare Dental//Appointment Reminder//EN
+BEGIN:VEVENT
+UID:${appointment.id}@smilecare.dental
+DTSTART:${startDateTime}
+DTEND:${endDateTime}
+SUMMARY:${decodeURIComponent(title)}
+DESCRIPTION:${decodeURIComponent(details)}
+LOCATION:${decodeURIComponent(location)}
+END:VEVENT
+END:VCALENDAR`;
+    
+    // Try to detect if user prefers Google Calendar or download ICS
+    if (navigator.userAgent.includes('Chrome') || navigator.userAgent.includes('Edge')) {
+      window.open(googleUrl, '_blank');
+    } else {
+      // Create and download ICS file
+      const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+      const link = document.createElement('a');
+      link.href = window.URL.createObjectURL(blob);
+      link.download = `dental-appointment-${appointment.appointmentDate}.ics`;
+      link.click();
+    }
+  };
+
   const upcomingAppointments = appointments?.filter(apt => {
     // Parse the appointment time correctly - it comes in format like "10:30 AM"
     const [time, period] = apt.appointmentTime.split(' ');
@@ -165,19 +220,31 @@ export default function Home() {
                     {upcomingAppointments.map((appointment) => (
                       <div key={appointment.id} className="p-4 bg-blue-50 rounded-lg border-l-4 border-blue-600">
                         <div className="flex justify-between items-start">
-                          <div>
+                          <div className="flex-1">
                             <p className="font-medium text-gray-900">{appointment.treatmentType}</p>
                             <p className="text-sm text-gray-600">{appointment.doctorName}</p>
                           </div>
-                          <div className="text-right">
-                            <p className="text-sm font-medium text-gray-900">
-                              {new Date(appointment.appointmentDate).toLocaleDateString('en-US', { 
-                                weekday: 'long',
-                                month: 'long', 
-                                day: 'numeric' 
-                              })}
-                            </p>
-                            <p className="text-sm text-gray-600">{appointment.appointmentTime}</p>
+                          <div className="flex items-start gap-3">
+                            <div className="text-right">
+                              <p className="text-sm font-medium text-gray-900">
+                                {new Date(appointment.appointmentDate).toLocaleDateString('en-US', { 
+                                  weekday: 'long',
+                                  month: 'long', 
+                                  day: 'numeric' 
+                                })}
+                              </p>
+                              <p className="text-sm text-gray-600">{appointment.appointmentTime}</p>
+                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => createCalendarReminder(appointment)}
+                              className="flex items-center gap-1 px-2 py-1 h-8 text-xs"
+                              title="Add to Calendar"
+                            >
+                              <CalendarPlus className="w-3 h-3" />
+                              Remind
+                            </Button>
                           </div>
                         </div>
                       </div>
