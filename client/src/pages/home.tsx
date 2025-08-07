@@ -104,7 +104,7 @@ export default function Home() {
           {/* Welcome Section */}
           <div className="lg:col-span-2">
             <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-              <div className="flex justify-between items-start mb-4">
+              <div className="flex justify-between items-start mb-6">
                 <div>
                   <h2 className="text-2xl font-semibold text-gray-900 mb-2">
                     Welcome back, {(user as any)?.firstName || 'Patient'}!
@@ -123,20 +123,10 @@ export default function Home() {
                   </Button>
                 )}
               </div>
-            </div>
 
-            {/* Interactive Calendar */}
-            <Calendar />
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Upcoming Appointments */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Upcoming Appointments</CardTitle>
-              </CardHeader>
-              <CardContent>
+              {/* Upcoming Appointments in Jumbotron */}
+              <div className="mb-6">
+                <h3 className="text-lg font-medium text-gray-900 mb-3">Upcoming Appointments</h3>
                 {appointmentsLoading ? (
                   <div className="space-y-3">
                     <div className="animate-pulse bg-gray-200 h-16 rounded"></div>
@@ -145,27 +135,40 @@ export default function Home() {
                 ) : upcomingAppointments.length > 0 ? (
                   <div className="space-y-3">
                     {upcomingAppointments.map((appointment) => (
-                      <div key={appointment.id} className="p-3 bg-blue-50 rounded-lg border-l-4 border-blue-600">
+                      <div key={appointment.id} className="p-4 bg-blue-50 rounded-lg border-l-4 border-blue-600">
                         <div className="flex justify-between items-start">
                           <div>
-                            <p className="text-sm font-medium text-gray-900">{appointment.treatmentType}</p>
-                            <p className="text-xs text-gray-600">{appointment.doctorName}</p>
+                            <p className="font-medium text-gray-900">{appointment.treatmentType}</p>
+                            <p className="text-sm text-gray-600">{appointment.doctorName}</p>
                           </div>
-                          <span className="text-xs text-gray-500">
-                            {new Date(appointment.appointmentDate).toLocaleDateString('en-US', { 
-                              month: 'short', 
-                              day: 'numeric' 
-                            })}, {appointment.appointmentTime}
-                          </span>
+                          <div className="text-right">
+                            <p className="text-sm font-medium text-gray-900">
+                              {new Date(appointment.appointmentDate).toLocaleDateString('en-US', { 
+                                weekday: 'long',
+                                month: 'long', 
+                                day: 'numeric' 
+                              })}
+                            </p>
+                            <p className="text-sm text-gray-600">{appointment.appointmentTime}</p>
+                          </div>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-500">No upcoming appointments</p>
+                  <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <p className="text-gray-500 text-center">No upcoming appointments scheduled</p>
+                  </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
+
+            {/* Interactive Calendar */}
+            <Calendar />
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
 
             {/* Quick Actions */}
             <Card>

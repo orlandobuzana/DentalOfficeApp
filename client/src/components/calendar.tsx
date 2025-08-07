@@ -78,8 +78,8 @@ export default function Calendar() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/appointments'] });
       toast({
-        title: "Success",
-        description: "Appointment booked successfully!",
+        title: "Request Sent",
+        description: "Sending request for the appointment, we will call for confirmation",
       });
       setSelectedDate('');
       setSelectedTime('');
