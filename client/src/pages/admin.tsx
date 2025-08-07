@@ -42,14 +42,25 @@ export default function Admin() {
 
   // Redirect to home if not authenticated or not admin
   useEffect(() => {
-    if (!isLoading && (!isAuthenticated || (user as any)?.role !== 'admin')) {
+    if (!isLoading && !isAuthenticated) {
       toast({
         title: "Unauthorized",
-        description: "Admin access required. Redirecting...",
+        description: "You are logged out. Logging in again...",
         variant: "destructive",
       });
       setTimeout(() => {
         window.location.href = "/api/login";
+      }, 500);
+      return;
+    }
+    if (!isLoading && isAuthenticated && (user as any)?.role !== 'admin') {
+      toast({
+        title: "Access Denied",
+        description: "Admin privileges required. Redirecting to home...",
+        variant: "destructive",
+      });
+      setTimeout(() => {
+        window.location.href = "/";
       }, 500);
       return;
     }
@@ -128,6 +139,21 @@ export default function Admin() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  if ((user as any)?.role !== 'admin') {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Checking permissions...</p>
         </div>
       </div>
     );
