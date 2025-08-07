@@ -20,17 +20,28 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Edit, Upload } from "lucide-react";
+import { Plus, Edit } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { insertPromotionSchema, type Promotion } from "@shared/schema";
 import { z } from "zod";
 
 const formSchema = insertPromotionSchema.extend({
-  discountAmount: z.string().transform((val) => val ? parseInt(val) * 100 : undefined), // Convert to cents
-  discountPercent: z.string().transform((val) => val ? parseInt(val) : undefined),
-});
+  discountAmount: z.union([z.string(), z.number()]).transform((val) => {
+    if (typeof val === 'string') {
+      return val ? parseInt(val) * 100 : undefined;
+    }
+    return val ? val * 100 : undefined;
+  }),
+}).omit({ discountAmountCents: true });
 
 type FormData = z.infer<typeof formSchema>;
 
@@ -41,8 +52,6 @@ interface PromotionFormProps {
 
 export function PromotionForm({ promotion, trigger }: PromotionFormProps) {
   const [open, setOpen] = useState(false);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string>("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -51,62 +60,41 @@ export function PromotionForm({ promotion, trigger }: PromotionFormProps) {
     defaultValues: {
       title: "",
       description: "",
-      discountPercent: "",
-      discountAmount: "",
-      bannerImageUrl: "",
+      discountPercent: 0,
       validFrom: "",
       validUntil: "",
+      discountAmount: 0,
       displayOrder: 0,
     },
   });
 
   useEffect(() => {
     if (promotion) {
-      const validFrom = promotion.validFrom ? new Date(promotion.validFrom).toISOString().split('T')[0] : "";
-      const validUntil = promotion.validUntil ? new Date(promotion.validUntil).toISOString().split('T')[0] : "";
-      
       form.reset({
         title: promotion.title,
-        description: promotion.description,
-        discountPercent: promotion.discountPercent?.toString() || "",
-        discountAmount: promotion.discountAmountCents ? (promotion.discountAmountCents / 100).toString() : "",
-        bannerImageUrl: promotion.bannerImageUrl || "",
-        validFrom,
-        validUntil,
+        description: promotion.description || "",
+        discountPercent: promotion.discountPercent || 0,
+        validFrom: promotion.validFrom,
+        validUntil: promotion.validUntil,
+        discountAmount: promotion.discountAmountCents ? (promotion.discountAmountCents / 100) : 0,
         displayOrder: promotion.displayOrder || 0,
       });
-      
-      if (promotion.bannerImageUrl) {
-        setImagePreview(promotion.bannerImageUrl);
-      }
     }
   }, [promotion, form]);
 
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const mutation = useMutation({
     mutationFn: async (data: FormData) => {
-      let finalData = { ...data };
-      
-      // Handle image upload if there's a file
-      if (imageFile) {
-        // For now, we'll use a placeholder URL. In a real app, you'd upload to your image service
-        finalData.bannerImageUrl = `/images/promotions/${Date.now()}_${imageFile.name}`;
-      }
-      
       const method = promotion ? 'PUT' : 'POST';
       const url = promotion ? `/api/promotions/${promotion.id}` : '/api/promotions';
-      await apiRequest(method, url, finalData);
+      
+      // Transform the data for the backend
+      const { discountAmount, ...restData } = data;
+      const submitData = {
+        ...restData,
+        discountAmountCents: discountAmount,
+      };
+      
+      await apiRequest(method, url, submitData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/promotions'] });
@@ -116,8 +104,6 @@ export function PromotionForm({ promotion, trigger }: PromotionFormProps) {
       });
       setOpen(false);
       form.reset();
-      setImageFile(null);
-      setImagePreview("");
     },
     onError: (error: Error) => {
       toast({
@@ -148,13 +134,13 @@ export function PromotionForm({ promotion, trigger }: PromotionFormProps) {
       <DialogTrigger asChild>
         {trigger || defaultTrigger}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>
             {promotion ? "Edit Promotion" : "Add New Promotion"}
           </DialogTitle>
           <DialogDescription>
-            {promotion ? "Update the promotion details." : "Create a new promotional offer for your patients."}
+            {promotion ? "Update the promotion information." : "Create a new promotional offer for your practice."}
           </DialogDescription>
         </DialogHeader>
 
@@ -167,7 +153,7 @@ export function PromotionForm({ promotion, trigger }: PromotionFormProps) {
                 <FormItem>
                   <FormLabel>Promotion Title</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Summer Whitening Special" {...field} />
+                    <Input placeholder="e.g., New Patient Special" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -182,7 +168,7 @@ export function PromotionForm({ promotion, trigger }: PromotionFormProps) {
                   <FormLabel>Description</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Detailed description of the promotion offer..."
+                      placeholder="Describe the promotional offer..."
                       rows={3}
                       {...field}
                     />
@@ -198,14 +184,16 @@ export function PromotionForm({ promotion, trigger }: PromotionFormProps) {
                 name="discountPercent"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Discount Percentage (%)</FormLabel>
+                    <FormLabel>Discount (%)</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
+                        placeholder="20"
                         min="0"
                         max="100"
-                        placeholder="20"
                         {...field}
+                        value={field.value || 0}
+                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                       />
                     </FormControl>
                     <FormMessage />
@@ -225,6 +213,8 @@ export function PromotionForm({ promotion, trigger }: PromotionFormProps) {
                         step="0.01"
                         placeholder="50.00"
                         {...field}
+                        value={field.value || 0}
+                        onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                       />
                     </FormControl>
                     <FormMessage />
@@ -241,7 +231,10 @@ export function PromotionForm({ promotion, trigger }: PromotionFormProps) {
                   <FormItem>
                     <FormLabel>Valid From</FormLabel>
                     <FormControl>
-                      <Input type="date" {...field} />
+                      <Input
+                        type="date"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -255,7 +248,10 @@ export function PromotionForm({ promotion, trigger }: PromotionFormProps) {
                   <FormItem>
                     <FormLabel>Valid Until</FormLabel>
                     <FormControl>
-                      <Input type="date" {...field} />
+                      <Input
+                        type="date"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -274,6 +270,7 @@ export function PromotionForm({ promotion, trigger }: PromotionFormProps) {
                       type="number"
                       placeholder="0"
                       {...field}
+                      value={field.value || 0}
                       onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                     />
                   </FormControl>
@@ -282,55 +279,19 @@ export function PromotionForm({ promotion, trigger }: PromotionFormProps) {
               )}
             />
 
-            <div className="space-y-2">
-              <FormLabel>Banner Image</FormLabel>
-              <div className="flex items-center space-x-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => document.getElementById('banner-upload')?.click()}
-                >
-                  <Upload className="h-4 w-4 mr-2" />
-                  Choose Image
-                </Button>
-                <input
-                  id="banner-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="hidden"
-                />
-                {imageFile && (
-                  <span className="text-sm text-gray-600">{imageFile.name}</span>
-                )}
-              </div>
-              {imagePreview && (
-                <div className="mt-2">
-                  <img
-                    src={imagePreview}
-                    alt="Banner preview"
-                    className="w-32 h-20 object-cover rounded border"
-                  />
-                </div>
-              )}
-            </div>
-
             <div className="flex justify-end space-x-2">
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => {
-                  setOpen(false);
-                  setImageFile(null);
-                  setImagePreview("");
-                }}
+                onClick={() => setOpen(false)}
               >
                 Cancel
               </Button>
               <Button type="submit" disabled={mutation.isPending}>
-                {mutation.isPending
-                  ? (promotion ? "Updating..." : "Creating...")
-                  : (promotion ? "Update" : "Create")}
+                {mutation.isPending 
+                  ? (promotion ? "Updating..." : "Creating...") 
+                  : (promotion ? "Update Promotion" : "Create Promotion")
+                }
               </Button>
             </div>
           </form>

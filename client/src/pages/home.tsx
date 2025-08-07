@@ -94,7 +94,7 @@ export default function Home() {
   // Function to create calendar reminder
   const createCalendarReminder = (appointment: Appointment) => {
     const [time, period] = appointment.appointmentTime.split(' ');
-    const [hours, minutes] = time.split(':').map(num => parseInt(num));
+    const [hours, minutes] = time.split(':').map((num: string) => parseInt(num));
     const hour24 = period === 'PM' && hours !== 12 ? hours + 12 : (period === 'AM' && hours === 12 ? 0 : hours);
     
     const startDate = new Date(appointment.appointmentDate + 'T00:00:00');
@@ -156,7 +156,7 @@ END:VCALENDAR`;
     // Sort by date and time, earliest first
     const parseDateTime = (appointment: any) => {
       const [time, period] = appointment.appointmentTime.split(' ');
-      const [hours, minutes] = time.split(':').map(num => parseInt(num));
+      const [hours, minutes] = time.split(':').map((num: string) => parseInt(num));
       const hour24 = period === 'PM' && hours !== 12 ? hours + 12 : (period === 'AM' && hours === 12 ? 0 : hours);
       const date = new Date(appointment.appointmentDate + 'T00:00:00');
       date.setHours(hour24, minutes, 0, 0);
@@ -208,7 +208,7 @@ END:VCALENDAR`;
                     {upcomingAppointments.map((appointment) => {
                       // Check if appointment time has passed
                       const [time, period] = appointment.appointmentTime.split(' ');
-                      const [hours, minutes] = time.split(':').map(num => parseInt(num));
+                      const [hours, minutes] = time.split(':').map((num: string) => parseInt(num));
                       const hour24 = period === 'PM' && hours !== 12 ? hours + 12 : (period === 'AM' && hours === 12 ? 0 : hours);
                       
                       const appointmentDateTime = new Date(appointment.appointmentDate + 'T00:00:00');
