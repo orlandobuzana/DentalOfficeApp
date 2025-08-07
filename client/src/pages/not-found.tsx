@@ -1,17 +1,23 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Heart, Smile, ArrowLeft } from "lucide-react";
+import { useLocation } from "wouter";
 
 export default function NotFound() {
+  const [location] = useLocation();
+  const isAdminRoute = location.startsWith('/admin');
+  
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-blue-50 to-white relative overflow-hidden">
-      {/* Watermark Logo */}
-      <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
-        <div className="text-center">
-          <Smile className="h-96 w-96 text-blue-600 mb-8 mx-auto" />
-          <div className="text-8xl font-bold text-blue-600">SmileCare</div>
+      {/* Watermark Logo - hidden when admin panel is open */}
+      {!isAdminRoute && (
+        <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
+          <div className="text-center">
+            <Smile className="h-96 w-96 text-blue-600 mb-8 mx-auto" />
+            <div className="text-8xl font-bold text-blue-600">SmileCare</div>
+          </div>
         </div>
-      </div>
+      )}
       
       {/* Content */}
       <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
