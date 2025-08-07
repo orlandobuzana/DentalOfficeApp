@@ -35,8 +35,13 @@ import { insertProcedureSchema, type Procedure } from "@shared/schema";
 import { z } from "zod";
 
 const formSchema = insertProcedureSchema.extend({
-  price: z.string().transform((val) => val ? parseInt(val) * 100 : undefined), // Convert to cents
-});
+  price: z.union([z.string(), z.number()]).transform((val) => {
+    if (typeof val === 'string') {
+      return val ? parseInt(val) * 100 : undefined;
+    }
+    return val ? val * 100 : undefined;
+  }),
+}).omit({ priceCents: true });
 
 type FormData = z.infer<typeof formSchema>;
 
@@ -56,7 +61,7 @@ export function ProcedureForm({ procedure, trigger }: ProcedureFormProps) {
       name: "",
       description: "",
       duration: 30,
-      price: "",
+      price: 0,
       category: "general",
       displayOrder: 0,
     },
@@ -66,9 +71,9 @@ export function ProcedureForm({ procedure, trigger }: ProcedureFormProps) {
     if (procedure) {
       form.reset({
         name: procedure.name,
-        description: procedure.description,
+        description: procedure.description || "",
         duration: procedure.duration,
-        price: procedure.priceCents ? (procedure.priceCents / 100).toString() : "",
+        price: procedure.priceCents ? (procedure.priceCents / 100) : 0,
         category: procedure.category,
         displayOrder: procedure.displayOrder || 0,
       });
@@ -79,7 +84,15 @@ export function ProcedureForm({ procedure, trigger }: ProcedureFormProps) {
     mutationFn: async (data: FormData) => {
       const method = procedure ? 'PUT' : 'POST';
       const url = procedure ? `/api/procedures/${procedure.id}` : '/api/procedures';
-      await apiRequest(method, url, data);
+      
+      // Transform the data for the backend
+      const { price, ...restData } = data;
+      const submitData = {
+        ...restData,
+        priceCents: price,
+      };
+      
+      await apiRequest(method, url, submitData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/procedures'] });
@@ -224,6 +237,8 @@ export function ProcedureForm({ procedure, trigger }: ProcedureFormProps) {
                         step="0.01"
                         placeholder="150.00"
                         {...field}
+                        value={field.value || 0}
+                        onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                       />
                     </FormControl>
                     <FormMessage />
@@ -242,6 +257,7 @@ export function ProcedureForm({ procedure, trigger }: ProcedureFormProps) {
                         type="number"
                         placeholder="0"
                         {...field}
+                        value={field.value || 0}
                         onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                       />
                     </FormControl>
