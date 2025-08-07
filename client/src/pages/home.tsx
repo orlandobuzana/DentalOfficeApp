@@ -91,9 +91,38 @@ export default function Home() {
     return null;
   }
 
-  const upcomingAppointments = appointments?.filter(apt => 
-    apt.status !== 'cancelled' && new Date(`${apt.appointmentDate}T${apt.appointmentTime}`) > new Date()
-  ).slice(0, 2) || [];
+  const upcomingAppointments = appointments?.filter(apt => {
+    // Parse the appointment time correctly - it comes in format like "10:30 AM"
+    const [time, period] = apt.appointmentTime.split(' ');
+    const [hours, minutes] = time.split(':').map(num => parseInt(num));
+    const hour24 = period === 'PM' && hours !== 12 ? hours + 12 : (period === 'AM' && hours === 12 ? 0 : hours);
+    
+    const appointmentDateTime = new Date(apt.appointmentDate);
+    appointmentDateTime.setHours(hour24, minutes, 0, 0);
+    
+    const now = new Date();
+    
+    // Include confirmed, pending, and other non-cancelled statuses
+    const validStatuses = ['confirmed', 'pending', 'scheduled'];
+    const isUpcoming = appointmentDateTime > now;
+    const isValidStatus = validStatuses.includes(apt.status.toLowerCase());
+    
+    console.log('Appointment:', apt.treatmentType, 'Status:', apt.status, 'DateTime:', appointmentDateTime, 'Now:', now, 'IsUpcoming:', isUpcoming, 'IsValidStatus:', isValidStatus);
+    
+    return isValidStatus && isUpcoming;
+  }).sort((a, b) => {
+    // Sort by date and time, earliest first
+    const parseDateTime = (appointment: any) => {
+      const [time, period] = appointment.appointmentTime.split(' ');
+      const [hours, minutes] = time.split(':').map(num => parseInt(num));
+      const hour24 = period === 'PM' && hours !== 12 ? hours + 12 : (period === 'AM' && hours === 12 ? 0 : hours);
+      const date = new Date(appointment.appointmentDate);
+      date.setHours(hour24, minutes, 0, 0);
+      return date;
+    };
+    
+    return parseDateTime(a).getTime() - parseDateTime(b).getTime();
+  }).slice(0, 3) || []; // Show up to 3 upcoming appointments
 
   return (
     <div className="min-h-screen bg-gray-50">
