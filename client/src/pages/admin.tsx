@@ -6,11 +6,13 @@ import TeamForm from "@/components/admin/team-form";
 import ResourceForm from "@/components/admin/resource-form";
 import ChatbotManager from "@/components/admin/chatbot-manager";
 import CalendarManager from "@/components/admin/calendar-manager";
+import { ProcedureList } from "@/components/admin/procedure-list";
+import { PromotionList } from "@/components/admin/promotion-list";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { CalendarCheck, Users, DollarSign, Clock, UserPlus, FileText, Calendar, Settings, MessageSquare } from "lucide-react";
+import { CalendarCheck, Users, DollarSign, Clock, UserPlus, FileText, Calendar, Settings, MessageSquare, Stethoscope, Percent } from "lucide-react";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -32,6 +34,8 @@ export default function Admin() {
   const [showResourceForm, setShowResourceForm] = useState(false);
   const [showChatbotManager, setShowChatbotManager] = useState(false);
   const [showCalendarManager, setShowCalendarManager] = useState(false);
+  const [showProcedures, setShowProcedures] = useState(false);
+  const [showPromotions, setShowPromotions] = useState(false);
 
   // Redirect to home if not authenticated or not admin
   useEffect(() => {
@@ -335,10 +339,57 @@ export default function Admin() {
                   <MessageSquare className="h-8 w-8 text-gray-400 group-hover:text-blue-600 mb-2 mx-auto" />
                   <p className="text-sm font-medium text-gray-700 group-hover:text-blue-600">Manage Chatbot</p>
                 </button>
+
+                <button 
+                  onClick={() => setShowProcedures(true)}
+                  className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-600 hover:bg-blue-50 transition-colors group"
+                >
+                  <Stethoscope className="h-8 w-8 text-gray-400 group-hover:text-blue-600 mb-2 mx-auto" />
+                  <p className="text-sm font-medium text-gray-700 group-hover:text-blue-600">Manage Procedures</p>
+                </button>
+
+                <button 
+                  onClick={() => setShowPromotions(true)}
+                  className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-600 hover:bg-blue-50 transition-colors group"
+                >
+                  <Percent className="h-8 w-8 text-gray-400 group-hover:text-blue-600 mb-2 mx-auto" />
+                  <p className="text-sm font-medium text-gray-700 group-hover:text-blue-600">Manage Promotions</p>
+                </button>
               </div>
             </CardContent>
           </Card>
         </div>
+
+        {/* Procedures and Promotions Management Sections */}
+        {showProcedures && (
+          <div className="mt-8">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-2xl font-bold text-gray-900">Procedures Management</h3>
+              <Button
+                variant="outline"
+                onClick={() => setShowProcedures(false)}
+              >
+                Close
+              </Button>
+            </div>
+            <ProcedureList />
+          </div>
+        )}
+
+        {showPromotions && (
+          <div className="mt-8">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-2xl font-bold text-gray-900">Promotions Management</h3>
+              <Button
+                variant="outline"
+                onClick={() => setShowPromotions(false)}
+              >
+                Close
+              </Button>
+            </div>
+            <PromotionList />
+          </div>
+        )}
 
         {/* Modal Components */}
         <ChatbotManager 

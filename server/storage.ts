@@ -5,6 +5,8 @@ import {
   resources,
   chatbotResponses,
   timeSlots,
+  procedures,
+  promotions,
   type User,
   type UpsertUser,
   type InsertAppointment,
@@ -17,6 +19,10 @@ import {
   type ChatbotResponse,
   type InsertTimeSlot,
   type TimeSlot,
+  type InsertProcedure,
+  type Procedure,
+  type InsertPromotion,
+  type Promotion,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gte, desc, asc } from "drizzle-orm";
@@ -57,6 +63,19 @@ export interface IStorage {
   updateTimeSlot(id: string, updates: Partial<InsertTimeSlot>): Promise<TimeSlot | undefined>;
   deleteTimeSlot(id: string): Promise<void>;
   createTimeSlots(slots: InsertTimeSlot[]): Promise<TimeSlot[]>;
+  
+  // Procedure operations
+  getProcedures(): Promise<Procedure[]>;
+  createProcedure(procedure: InsertProcedure): Promise<Procedure>;
+  updateProcedure(id: string, procedure: Partial<InsertProcedure>): Promise<Procedure | undefined>;
+  deleteProcedure(id: string): Promise<void>;
+  
+  // Promotion operations
+  getPromotions(): Promise<Promotion[]>;
+  getActivePromotions(): Promise<Promotion[]>;
+  createPromotion(promotion: InsertPromotion): Promise<Promotion>;
+  updatePromotion(id: string, promotion: Partial<InsertPromotion>): Promise<Promotion | undefined>;
+  deletePromotion(id: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -278,6 +297,86 @@ export class DatabaseStorage implements IStorage {
       .insert(timeSlots)
       .values(slots)
       .returning();
+  }
+
+  // Procedure operations
+  async getProcedures(): Promise<Procedure[]> {
+    return await db
+      .select()
+      .from(procedures)
+      .where(eq(procedures.isActive, true))
+      .orderBy(asc(procedures.displayOrder), asc(procedures.name));
+  }
+
+  async createProcedure(procedureData: InsertProcedure): Promise<Procedure> {
+    const [procedure] = await db
+      .insert(procedures)
+      .values(procedureData)
+      .returning();
+    return procedure;
+  }
+
+  async updateProcedure(id: string, procedureData: Partial<InsertProcedure>): Promise<Procedure | undefined> {
+    const [updated] = await db
+      .update(procedures)
+      .set({ ...procedureData, updatedAt: new Date() })
+      .where(eq(procedures.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteProcedure(id: string): Promise<void> {
+    await db
+      .update(procedures)
+      .set({ isActive: false, updatedAt: new Date() })
+      .where(eq(procedures.id, id));
+  }
+
+  // Promotion operations
+  async getPromotions(): Promise<Promotion[]> {
+    return await db
+      .select()
+      .from(promotions)
+      .where(eq(promotions.isActive, true))
+      .orderBy(asc(promotions.displayOrder), desc(promotions.validUntil));
+  }
+
+  async getActivePromotions(): Promise<Promotion[]> {
+    const currentDate = new Date().toISOString().split('T')[0];
+    return await db
+      .select()
+      .from(promotions)
+      .where(
+        and(
+          eq(promotions.isActive, true),
+          gte(promotions.validUntil, currentDate)
+        )
+      )
+      .orderBy(asc(promotions.displayOrder));
+  }
+
+  async createPromotion(promotionData: InsertPromotion): Promise<Promotion> {
+    const [promotion] = await db
+      .insert(promotions)
+      .values(promotionData)
+      .returning();
+    return promotion;
+  }
+
+  async updatePromotion(id: string, promotionData: Partial<InsertPromotion>): Promise<Promotion | undefined> {
+    const [updated] = await db
+      .update(promotions)
+      .set({ ...promotionData, updatedAt: new Date() })
+      .where(eq(promotions.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deletePromotion(id: string): Promise<void> {
+    await db
+      .update(promotions)
+      .set({ isActive: false, updatedAt: new Date() })
+      .where(eq(promotions.id, id));
   }
 }
 

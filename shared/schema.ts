@@ -100,6 +100,36 @@ export const timeSlots = pgTable("time_slots", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Procedures table
+export const procedures = pgTable("procedures", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar("name").notNull(),
+  description: text("description").notNull(),
+  duration: integer("duration_minutes").notNull(), // Duration in minutes
+  priceCents: integer("price_cents"), // Price in cents
+  category: varchar("category").notNull(), // 'general', 'cosmetic', 'oral-surgery', etc.
+  isActive: boolean("is_active").default(true),
+  displayOrder: integer("display_order").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Promotions table
+export const promotions = pgTable("promotions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: varchar("title").notNull(),
+  description: text("description").notNull(),
+  discountPercent: integer("discount_percent"), // Percentage discount (0-100)
+  discountAmountCents: integer("discount_amount_cents"), // Fixed amount discount in cents
+  bannerImageUrl: varchar("banner_image_url"),
+  validFrom: date("valid_from").notNull(),
+  validUntil: date("valid_until").notNull(),
+  isActive: boolean("is_active").default(true),
+  displayOrder: integer("display_order").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   appointments: many(appointments),
@@ -148,6 +178,18 @@ export const insertTimeSlotSchema = createInsertSchema(timeSlots).omit({
   createdAt: true,
 });
 
+export const insertProcedureSchema = createInsertSchema(procedures).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertPromotionSchema = createInsertSchema(promotions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -161,3 +203,7 @@ export type InsertChatbotResponse = z.infer<typeof insertChatbotResponseSchema>;
 export type ChatbotResponse = typeof chatbotResponses.$inferSelect;
 export type InsertTimeSlot = z.infer<typeof insertTimeSlotSchema>;
 export type TimeSlot = typeof timeSlots.$inferSelect;
+export type InsertProcedure = z.infer<typeof insertProcedureSchema>;
+export type Procedure = typeof procedures.$inferSelect;
+export type InsertPromotion = z.infer<typeof insertPromotionSchema>;
+export type Promotion = typeof promotions.$inferSelect;

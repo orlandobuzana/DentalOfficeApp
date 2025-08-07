@@ -6,7 +6,9 @@ import {
   insertAppointmentSchema,
   insertTeamMemberSchema,
   insertResourceSchema,
-  insertTimeSlotSchema
+  insertTimeSlotSchema,
+  insertProcedureSchema,
+  insertPromotionSchema
 } from "@shared/schema";
 import { z } from "zod";
 
@@ -392,6 +394,132 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Procedures routes
+  app.get('/api/procedures', async (req, res) => {
+    try {
+      const procedures = await storage.getProcedures();
+      res.json(procedures);
+    } catch (error) {
+      console.error("Error fetching procedures:", error);
+      res.status(500).json({ message: "Failed to fetch procedures" });
+    }
+  });
+
+  app.post('/api/procedures', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const procedureData = insertProcedureSchema.parse(req.body);
+      const procedure = await storage.createProcedure(procedureData);
+      res.json(procedure);
+    } catch (error) {
+      console.error("Error creating procedure:", error);
+      res.status(400).json({ message: "Failed to create procedure" });
+    }
+  });
+
+  app.put('/api/procedures/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const procedureData = insertProcedureSchema.partial().parse(req.body);
+      const procedure = await storage.updateProcedure(req.params.id, procedureData);
+      res.json(procedure);
+    } catch (error) {
+      console.error("Error updating procedure:", error);
+      res.status(400).json({ message: "Failed to update procedure" });
+    }
+  });
+
+  app.delete('/api/procedures/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      await storage.deleteProcedure(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting procedure:", error);
+      res.status(400).json({ message: "Failed to delete procedure" });
+    }
+  });
+
+  // Promotions routes
+  app.get('/api/promotions', async (req, res) => {
+    try {
+      const promotions = await storage.getPromotions();
+      res.json(promotions);
+    } catch (error) {
+      console.error("Error fetching promotions:", error);
+      res.status(500).json({ message: "Failed to fetch promotions" });
+    }
+  });
+
+  app.get('/api/promotions/active', async (req, res) => {
+    try {
+      const promotions = await storage.getActivePromotions();
+      res.json(promotions);
+    } catch (error) {
+      console.error("Error fetching active promotions:", error);
+      res.status(500).json({ message: "Failed to fetch active promotions" });
+    }
+  });
+
+  app.post('/api/promotions', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const promotionData = insertPromotionSchema.parse(req.body);
+      const promotion = await storage.createPromotion(promotionData);
+      res.json(promotion);
+    } catch (error) {
+      console.error("Error creating promotion:", error);
+      res.status(400).json({ message: "Failed to create promotion" });
+    }
+  });
+
+  app.put('/api/promotions/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const promotionData = insertPromotionSchema.partial().parse(req.body);
+      const promotion = await storage.updatePromotion(req.params.id, promotionData);
+      res.json(promotion);
+    } catch (error) {
+      console.error("Error updating promotion:", error);
+      res.status(400).json({ message: "Failed to update promotion" });
+    }
+  });
+
+  app.delete('/api/promotions/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      await storage.deletePromotion(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting promotion:", error);
+      res.status(400).json({ message: "Failed to delete promotion" });
+    }
+  });
+
   // Initialize some default data
   app.post('/api/initialize', isAuthenticated, async (req: any, res) => {
     try {
@@ -445,7 +573,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       await storage.createTimeSlots(timeSlots);
-      res.json({ success: true, message: "Default data initialized" });
+
+      // Add sample procedures
+      const procedures = [
+        {
+          name: "Dental Cleaning",
+          description: "Regular dental cleaning and examination",
+          duration: 45,
+          priceCents: 12000, // $120
+          category: "general",
+          displayOrder: 1,
+        },
+        {
+          name: "Teeth Whitening",
+          description: "Professional teeth whitening treatment",
+          duration: 90,
+          priceCents: 35000, // $350
+          category: "cosmetic",
+          displayOrder: 2,
+        },
+        {
+          name: "Root Canal",
+          description: "Root canal therapy to save infected tooth",
+          duration: 120,
+          priceCents: 120000, // $1200
+          category: "endodontics",
+          displayOrder: 3,
+        },
+        {
+          name: "Dental Implant",
+          description: "Single tooth implant with crown",
+          duration: 180,
+          priceCents: 350000, // $3500
+          category: "oral-surgery",
+          displayOrder: 4,
+        },
+      ];
+
+      for (const procedure of procedures) {
+        await storage.createProcedure(procedure);
+      }
+
+      // Add sample promotions
+      const currentDate = new Date();
+      const futureDate = new Date();
+      futureDate.setMonth(currentDate.getMonth() + 3);
+      
+      const promotions = [
+        {
+          title: "New Patient Special",
+          description: "First cleaning and exam for new patients at 50% off regular price",
+          discountPercent: 50,
+          discountAmountCents: null,
+          bannerImageUrl: null,
+          validFrom: currentDate.toISOString().split('T')[0],
+          validUntil: futureDate.toISOString().split('T')[0],
+          displayOrder: 1,
+        },
+        {
+          title: "Summer Whitening Promotion",
+          description: "Professional teeth whitening treatment with $100 discount",
+          discountPercent: null,
+          discountAmountCents: 10000, // $100 off
+          bannerImageUrl: null,
+          validFrom: currentDate.toISOString().split('T')[0],
+          validUntil: futureDate.toISOString().split('T')[0],
+          displayOrder: 2,
+        },
+      ];
+
+      for (const promotion of promotions) {
+        await storage.createPromotion(promotion);
+      }
+
+      res.json({ success: true, message: "Default data initialized including procedures and promotions" });
     } catch (error) {
       console.error("Error initializing data:", error);
       res.status(500).json({ message: "Failed to initialize data" });
