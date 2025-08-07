@@ -97,7 +97,8 @@ export default function Home() {
     const [hours, minutes] = time.split(':').map(num => parseInt(num));
     const hour24 = period === 'PM' && hours !== 12 ? hours + 12 : (period === 'AM' && hours === 12 ? 0 : hours);
     
-    const appointmentDateTime = new Date(apt.appointmentDate);
+    // Create date object correctly - use the appointment date as base
+    const appointmentDateTime = new Date(apt.appointmentDate + 'T00:00:00');
     appointmentDateTime.setHours(hour24, minutes, 0, 0);
     
     const now = new Date();
@@ -107,8 +108,6 @@ export default function Home() {
     const isUpcoming = appointmentDateTime > now;
     const isValidStatus = validStatuses.includes(apt.status.toLowerCase());
     
-    console.log('Appointment:', apt.treatmentType, 'Status:', apt.status, 'DateTime:', appointmentDateTime, 'Now:', now, 'IsUpcoming:', isUpcoming, 'IsValidStatus:', isValidStatus);
-    
     return isValidStatus && isUpcoming;
   }).sort((a, b) => {
     // Sort by date and time, earliest first
@@ -116,7 +115,7 @@ export default function Home() {
       const [time, period] = appointment.appointmentTime.split(' ');
       const [hours, minutes] = time.split(':').map(num => parseInt(num));
       const hour24 = period === 'PM' && hours !== 12 ? hours + 12 : (period === 'AM' && hours === 12 ? 0 : hours);
-      const date = new Date(appointment.appointmentDate);
+      const date = new Date(appointment.appointmentDate + 'T00:00:00');
       date.setHours(hour24, minutes, 0, 0);
       return date;
     };
