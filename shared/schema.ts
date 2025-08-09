@@ -144,6 +144,23 @@ export const forms = pgTable("forms", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Payment history table
+export const payments = pgTable("payments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  patientId: varchar("patient_id").notNull(),
+  appointmentId: varchar("appointment_id"),
+  amount: integer("amount_cents").notNull(), // Amount in cents
+  paymentMethod: varchar("payment_method").notNull(), // 'credit_card', 'insurance', 'cash', 'check'
+  paymentDate: timestamp("payment_date").defaultNow(),
+  procedureName: varchar("procedure_name").notNull(),
+  description: text("description"),
+  status: varchar("status").notNull().default('completed'), // 'pending', 'completed', 'refunded'
+  insuranceCovered: integer("insurance_covered_cents").default(0),
+  patientResponsibility: integer("patient_responsibility_cents").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   appointments: many(appointments),
@@ -205,6 +222,12 @@ export const insertPromotionSchema = createInsertSchema(promotions).omit({
 });
 
 export const insertFormSchema = createInsertSchema(forms).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertPaymentSchema = createInsertSchema(payments).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
@@ -354,3 +377,6 @@ export type InsertPromotion = z.infer<typeof insertPromotionSchema>;
 export type Promotion = typeof promotions.$inferSelect;
 export type InsertForm = z.infer<typeof insertFormSchema>;
 export type Form = typeof forms.$inferSelect;
+
+export type InsertPayment = z.infer<typeof insertPaymentSchema>;
+export type Payment = typeof payments.$inferSelect;

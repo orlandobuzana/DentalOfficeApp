@@ -418,6 +418,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Payment routes
+  app.get("/api/payments", isAuthenticated, async (req, res) => {
+    try {
+      const user = (req as any).user;
+      const userId = user.claims.sub;
+      
+      // If admin, return all payments, otherwise just the patient's payments
+      const payments = user.claims.role === 'admin' 
+        ? await storage.getPayments()
+        : await storage.getPaymentsByPatientId(userId);
+      
+      res.json(payments);
+    } catch (error) {
+      console.error("Error fetching payments:", error);
+      res.status(500).json({ message: "Failed to fetch payments" });
+    }
+  });
+
+  app.post("/api/payments", isAuthenticated, async (req, res) => {
+    try {
+      const user = (req as any).user;
+      if (user.claims.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const payment = await storage.createPayment(req.body);
+      res.status(201).json(payment);
+    } catch (error) {
+      console.error("Error creating payment:", error);
+      res.status(500).json({ message: "Failed to create payment" });
+    }
+  });
+
   // Initialize default data
   app.post("/api/initialize", isAuthenticated, async (req, res) => {
     try {

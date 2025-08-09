@@ -8,6 +8,7 @@ import {
   procedures,
   promotions,
   forms,
+  payments,
   patientPoints,
   achievements,
   patientAchievements,
@@ -32,6 +33,8 @@ import {
   type Promotion,
   type InsertForm,
   type Form,
+  type InsertPayment,
+  type Payment,
   type PatientPoints,
   type InsertPatientPoints,
   type Achievement,
@@ -104,6 +107,11 @@ export interface IStorage {
   createForm(form: InsertForm): Promise<Form>;
   updateForm(id: string, form: Partial<InsertForm>): Promise<Form | undefined>;
   deleteForm(id: string): Promise<void>;
+
+  // Payment operations
+  getPaymentsByPatientId(patientId: string): Promise<Payment[]>;
+  createPayment(paymentData: InsertPayment): Promise<Payment>;
+  getPayments(): Promise<Payment[]>;
   
   // Gamification operations
   getOrCreatePatientPoints(userId: string): Promise<PatientPoints>;
@@ -464,6 +472,30 @@ export class DatabaseStorage implements IStorage {
       .update(forms)
       .set({ isActive: false, updatedAt: new Date() })
       .where(eq(forms.id, id));
+  }
+
+  // Payment operations
+  async getPaymentsByPatientId(patientId: string): Promise<Payment[]> {
+    return await db
+      .select()
+      .from(payments)
+      .where(eq(payments.patientId, patientId))
+      .orderBy(desc(payments.paymentDate));
+  }
+
+  async createPayment(paymentData: InsertPayment): Promise<Payment> {
+    const [payment] = await db
+      .insert(payments)
+      .values(paymentData)
+      .returning();
+    return payment;
+  }
+
+  async getPayments(): Promise<Payment[]> {
+    return await db
+      .select()
+      .from(payments)
+      .orderBy(desc(payments.paymentDate));
   }
 
   // Gamification operations

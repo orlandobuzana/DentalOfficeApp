@@ -1,14 +1,16 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import Navigation from "@/components/navigation";
 import Calendar from "@/components/calendar";
 import Chatbot from "@/components/chatbot";
+import { PaymentHistory } from "@/components/payment-history";
+import { FormsDownload } from "@/components/forms-download";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CalendarCheck, FileText, CreditCard, Download, Shield, CalendarPlus } from "lucide-react";
+import { CalendarCheck, FileText, CreditCard, Download, Shield, CalendarPlus, ArrowLeft } from "lucide-react";
 import { isUnauthorizedError } from "@/lib/authUtils";
 
 interface Appointment {
@@ -24,6 +26,7 @@ export default function Home() {
   const { toast } = useToast();
   const { user, isAuthenticated, isLoading } = useAuth();
   const queryClient = useQueryClient();
+  const [activeView, setActiveView] = useState<string>('dashboard');
 
   // Redirect to home if not authenticated
   useEffect(() => {
@@ -166,7 +169,8 @@ END:VCALENDAR`;
     return parseDateTime(a).getTime() - parseDateTime(b).getTime();
   }).slice(0, 5) || []; // Show up to 5 appointments (including missed ones)
 
-  return (
+  // Dashboard content
+  const dashboardContent = () => (
     <div className="min-h-screen bg-gray-50">
       <Navigation />
       
@@ -282,15 +286,24 @@ END:VCALENDAR`;
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center">
+                  <button 
+                    onClick={() => setActiveView('medical-records')}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center"
+                  >
                     <FileText className="w-4 h-4 mr-3 text-gray-400" />
                     View Medical Records
                   </button>
-                  <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center">
+                  <button 
+                    onClick={() => setActiveView('payment-history')}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center"
+                  >
                     <CreditCard className="w-4 h-4 mr-3 text-gray-400" />
                     Payment History
                   </button>
-                  <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center">
+                  <button 
+                    onClick={() => setActiveView('download-forms')}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center"
+                  >
                     <Download className="w-4 h-4 mr-3 text-gray-400" />
                     Download Forms
                   </button>
@@ -304,4 +317,104 @@ END:VCALENDAR`;
       <Chatbot />
     </div>
   );
+
+  // Render different views based on activeView
+  const renderView = () => {
+    switch (activeView) {
+      case 'payment-history':
+        return (
+          <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+            <Navigation />
+            <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+              <div className="px-4 py-6 sm:px-0">
+                <div className="mb-6">
+                  <Button
+                    onClick={() => setActiveView('dashboard')}
+                    variant="ghost"
+                    className="mb-4"
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Back to Dashboard
+                  </Button>
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                    Payment History
+                  </h1>
+                </div>
+                <PaymentHistory />
+              </div>
+            </div>
+          </div>
+        );
+      case 'download-forms':
+        return (
+          <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+            <Navigation />
+            <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+              <div className="px-4 py-6 sm:px-0">
+                <div className="mb-6">
+                  <Button
+                    onClick={() => setActiveView('dashboard')}
+                    variant="ghost"
+                    className="mb-4"
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Back to Dashboard
+                  </Button>
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                    Download Forms
+                  </h1>
+                </div>
+                <FormsDownload />
+              </div>
+            </div>
+          </div>
+        );
+      case 'medical-records':
+        return (
+          <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+            <Navigation />
+            <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+              <div className="px-4 py-6 sm:px-0">
+                <div className="mb-6">
+                  <Button
+                    onClick={() => setActiveView('dashboard')}
+                    variant="ghost"
+                    className="mb-4"
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Back to Dashboard
+                  </Button>
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                    Medical Records
+                  </h1>
+                </div>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <FileText className="h-5 w-5 text-blue-600" />
+                      Medical Records
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-center py-12">
+                      <FileText className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                        Medical Records Coming Soon
+                      </h3>
+                      <p className="text-gray-500 dark:text-gray-400">
+                        Access to your complete medical records will be available soon.
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </div>
+        );
+      default:
+        return dashboardContent();
+    }
+  };
+
+  return renderView();
 }
