@@ -86,22 +86,7 @@ export default function Landing() {
         </div>
       </div>
 
-      {/* CTA Section */}
-      <div className="bg-blue-600 text-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
-          <p className="text-xl mb-8 opacity-90">
-            Join SmileCare Dental and take control of your dental health today.
-          </p>
-          <Button 
-            onClick={() => window.location.href = '/api/login'}
-            size="lg"
-            className="bg-white text-blue-600 hover:bg-gray-100 font-semibold py-3 px-8 rounded-lg"
-          >
-            Sign In Now
-          </Button>
-        </div>
-      </div>
+
     </div>
   );
 }

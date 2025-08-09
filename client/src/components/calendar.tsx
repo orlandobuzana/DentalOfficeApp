@@ -149,9 +149,8 @@ export default function Calendar() {
     .filter(slot => !selectedDoctor || slot.doctorName === selectedDoctor)
     .map(slot => slot.time);
 
-  // Fallback doctors list if no time slots are available
-  const fallbackDoctors = ["Dr. Sarah Johnson", "Dr. Mike Chen", "Dr. James Wilson"];
-  const doctorsList = doctors.length > 0 ? doctors : fallbackDoctors;
+  // Always use actual doctors from available slots, or show default options
+  const doctorsList = doctors.length > 0 ? doctors : ["Dr. Sarah Johnson", "Dr. Mike Chen", "Dr. James Wilson"];
 
   return (
     <Card>
@@ -285,17 +284,32 @@ export default function Calendar() {
                     Available Times
                   </label>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                    {availableTimes.map(time => (
-                      <Button
-                        key={time}
-                        variant={selectedTime === time ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setSelectedTime(time)}
-                        className="text-sm"
-                      >
-                        {time}
-                      </Button>
-                    ))}
+                    {availableTimes.length > 0 ? (
+                      availableTimes.map(time => (
+                        <Button
+                          key={time}
+                          variant={selectedTime === time ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setSelectedTime(time)}
+                          className="text-sm"
+                        >
+                          {time}
+                        </Button>
+                      ))
+                    ) : (
+                      // Show default time slots when no API data is available
+                      ['9:00 AM', '10:00 AM', '11:00 AM', '2:00 PM', '3:00 PM', '4:00 PM'].map(time => (
+                        <Button
+                          key={time}
+                          variant={selectedTime === time ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setSelectedTime(time)}
+                          className="text-sm"
+                        >
+                          {time}
+                        </Button>
+                      ))
+                    )}
                   </div>
                 </div>
 
