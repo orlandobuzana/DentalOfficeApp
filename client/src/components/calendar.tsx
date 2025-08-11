@@ -62,7 +62,21 @@ export default function Calendar() {
   }
 
   const { data: timeSlots } = useQuery<TimeSlot[]>({
-    queryKey: ["/api/timeslots", selectedDate],
+    queryKey: ["/api/timeslots", selectedDate, treatmentType],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (treatmentType) {
+        params.append('procedure', treatmentType);
+      }
+      const queryString = params.toString();
+      const url = `/api/timeslots/${selectedDate}${queryString ? `?${queryString}` : ''}`;
+      
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error('Failed to fetch timeslots');
+      }
+      return response.json();
+    },
     enabled: !!selectedDate,
   });
 

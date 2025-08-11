@@ -451,6 +451,195 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Time slots routes
+  app.get("/api/timeslots/:date", async (req, res) => {
+    try {
+      const { date } = req.params;
+      const { procedure } = req.query;
+      
+      const timeSlots = await storage.getTimeSlots(date);
+      
+      // Filter by procedure if specified
+      let filteredSlots = timeSlots;
+      if (procedure) {
+        // Get procedure details to determine duration
+        const procedures = await storage.getProcedures();
+        const selectedProcedure = procedures.find(p => p.name === procedure);
+        const duration = selectedProcedure?.duration || 60; // Default 60 minutes
+        
+        // Filter slots based on procedure duration and availability
+        filteredSlots = timeSlots.filter(slot => {
+          if (!slot.isAvailable) return false;
+          
+          // Check if there are enough consecutive slots for the procedure
+          const slotTime = new Date(`${date}T${convertTo24Hour(slot.time)}`);
+          const endTime = new Date(slotTime.getTime() + duration * 60000);
+          
+          // For now, just return available slots - can be enhanced with more complex logic
+          return true;
+        });
+      }
+      
+      res.json(filteredSlots);
+    } catch (error) {
+      console.error("Error fetching timeslots:", error);
+      res.status(500).json({ message: "Failed to fetch timeslots" });
+    }
+  });
+
+  app.post("/api/timeslots", isAuthenticated, async (req, res) => {
+    try {
+      const user = (req as any).user;
+      if (user.claims.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const timeSlot = await storage.createTimeSlot(req.body);
+      res.status(201).json(timeSlot);
+    } catch (error) {
+      console.error("Error creating timeslot:", error);
+      res.status(500).json({ message: "Failed to create timeslot" });
+    }
+  });
+
+  app.post("/api/timeslots/bulk", isAuthenticated, async (req, res) => {
+    try {
+      const user = (req as any).user;
+      if (user.claims.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const { date, times, doctorName } = req.body;
+      const timeSlots = [];
+      
+      for (const time of times) {
+        const timeSlot = await storage.createTimeSlot({
+          date,
+          time,
+          doctorName,
+          isAvailable: true
+        });
+        timeSlots.push(timeSlot);
+      }
+      
+      res.status(201).json(timeSlots);
+    } catch (error) {
+      console.error("Error creating bulk timeslots:", error);
+      res.status(500).json({ message: "Failed to create bulk timeslots" });
+    }
+  });
+
+  // Helper function to convert time to 24-hour format
+  const convertTo24Hour = (time12h: string) => {
+    const [time, modifier] = time12h.split(' ');
+    let [hours, minutes] = time.split(':');
+    
+    if (hours === '12') {
+      hours = '00';
+    }
+    
+    if (modifier === 'PM') {
+      hours = parseInt(hours, 10) + 12;
+    }
+    
+    return `${String(hours).padStart(2, '0')}:${minutes}:00`;
+  };
+
+  // Reports routes
+  app.get("/api/reports", isAuthenticated, async (req, res) => {
+    try {
+      const user = (req as any).user;
+      if (user.claims.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const { type, startDate, endDate } = req.query;
+      
+      let reportData = {};
+      
+      switch (type) {
+        case 'appointments':
+          const appointments = await storage.getAllAppointments();
+          const filteredAppointments = appointments.filter((apt: any) => {
+            if (startDate && endDate) {
+              const aptDate = new Date(apt.appointmentDate);
+              return aptDate >= new Date(startDate as string) && aptDate <= new Date(endDate as string);
+            }
+            return true;
+          });
+          
+          reportData = {
+            totalAppointments: filteredAppointments.length,
+            confirmedAppointments: filteredAppointments.filter((apt: any) => apt.status === 'confirmed').length,
+            pendingAppointments: filteredAppointments.filter((apt: any) => apt.status === 'pending').length,
+            cancelledAppointments: filteredAppointments.filter((apt: any) => apt.status === 'cancelled').length,
+            appointmentsByTreatment: filteredAppointments.reduce((acc: any, apt: any) => {
+              acc[apt.treatmentType] = (acc[apt.treatmentType] || 0) + 1;
+              return acc;
+            }, {}),
+            appointmentsByDoctor: filteredAppointments.reduce((acc: any, apt: any) => {
+              acc[apt.doctorName] = (acc[apt.doctorName] || 0) + 1;
+              return acc;
+            }, {}),
+            appointments: filteredAppointments
+          };
+          break;
+          
+        case 'payments':
+          const payments = await storage.getPayments();
+          const filteredPayments = payments.filter((payment: any) => {
+            if (startDate && endDate) {
+              const paymentDate = payment.paymentDate ? new Date(payment.paymentDate) : null;
+              if (!paymentDate) return false;
+              return paymentDate >= new Date(startDate as string) && paymentDate <= new Date(endDate as string);
+            }
+            return true;
+          });
+          
+          reportData = {
+            totalRevenue: filteredPayments.reduce((sum: number, payment: any) => sum + (payment.amount || 0), 0),
+            totalInsuranceCovered: filteredPayments.reduce((sum: number, payment: any) => sum + (payment.insuranceCovered || 0), 0),
+            totalPatientPaid: filteredPayments.reduce((sum: number, payment: any) => sum + (payment.patientResponsibility || 0), 0),
+            paymentsByMethod: filteredPayments.reduce((acc: any, payment: any) => {
+              acc[payment.paymentMethod] = (acc[payment.paymentMethod] || 0) + (payment.amount || 0);
+              return acc;
+            }, {}),
+            paymentsByProcedure: filteredPayments.reduce((acc: any, payment: any) => {
+              acc[payment.procedureName] = (acc[payment.procedureName] || 0) + (payment.amount || 0);
+              return acc;
+            }, {}),
+            payments: filteredPayments
+          };
+          break;
+          
+        case 'patients':
+          const allUsers = await storage.getAllUsers();
+          const patientUsers = allUsers.filter((user: any) => user.role !== 'admin');
+          
+          reportData = {
+            totalPatients: patientUsers.length,
+            newPatientsThisMonth: patientUsers.filter((user: any) => {
+              const createdDate = user.createdAt ? new Date(user.createdAt) : null;
+              if (!createdDate) return false;
+              const now = new Date();
+              const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+              return createdDate >= startOfMonth;
+            }).length,
+            patients: patientUsers
+          };
+          break;
+          
+        default:
+          return res.status(400).json({ message: "Invalid report type" });
+      }
+      
+      res.json(reportData);
+    } catch (error) {
+      console.error("Error generating report:", error);
+      res.status(500).json({ message: "Failed to generate report" });
+    }
+  });
+
   // Initialize default data
   app.post("/api/initialize", isAuthenticated, async (req, res) => {
     try {

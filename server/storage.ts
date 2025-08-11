@@ -74,6 +74,9 @@ export interface IStorage {
   updateResource(id: string, resource: Partial<InsertResource>): Promise<Resource | undefined>;
   deleteResource(id: string): Promise<void>;
   
+  // Additional user operations
+  getAllUsers(): Promise<User[]>;
+  
   // Chatbot operations
   getChatbotResponses(): Promise<ChatbotResponse[]>;
   findChatbotResponse(keywords: string[]): Promise<ChatbotResponse | undefined>;
@@ -147,6 +150,10 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return user;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users);
   }
 
   // Appointment operations

@@ -6,11 +6,12 @@ import Calendar from "@/components/calendar";
 import Chatbot from "@/components/chatbot";
 import { PaymentHistory } from "@/components/payment-history";
 import { FormsDownload } from "@/components/forms-download";
+import { ReportsManagement } from "@/components/reports-management";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CalendarCheck, FileText, CreditCard, Download, Shield, CalendarPlus, ArrowLeft } from "lucide-react";
+import { CalendarCheck, FileText, CreditCard, Download, Shield, CalendarPlus, ArrowLeft, BarChart3 } from "lucide-react";
 import { isUnauthorizedError } from "@/lib/authUtils";
 
 interface Appointment {
@@ -307,6 +308,15 @@ END:VCALENDAR`;
                     <Download className="w-4 h-4 mr-3 text-gray-400" />
                     Download Forms
                   </button>
+                  {(user as any)?.role === 'admin' && (
+                    <button 
+                      onClick={() => setActiveView('reports')}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center"
+                    >
+                      <BarChart3 className="w-4 h-4 mr-3 text-gray-400" />
+                      Reports & Analytics
+                    </button>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -407,6 +417,30 @@ END:VCALENDAR`;
                     </div>
                   </CardContent>
                 </Card>
+              </div>
+            </div>
+          </div>
+        );
+      case 'reports':
+        return (
+          <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+            <Navigation />
+            <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+              <div className="px-4 py-6 sm:px-0">
+                <div className="mb-6">
+                  <Button
+                    onClick={() => setActiveView('dashboard')}
+                    variant="ghost"
+                    className="mb-4"
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Back to Dashboard
+                  </Button>
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                    Reports & Analytics
+                  </h1>
+                </div>
+                <ReportsManagement />
               </div>
             </div>
           </div>
