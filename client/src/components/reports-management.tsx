@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { BarChart3, FileText, Users, CreditCard, Download, Calendar, TrendingUp } from "lucide-react";
+import { BarChart3, FileText, Users, CreditCard, Download, Calendar, TrendingUp, FileDown } from "lucide-react";
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 interface ReportData {
   appointments?: {
@@ -58,6 +60,142 @@ export function ReportsManagement() {
   const handleGenerateReport = () => {
     refetch();
     setShowResults(true);
+  };
+
+  const exportToPDF = () => {
+    if (!reportData) return;
+
+    const doc = new jsPDF();
+    const currentDate = new Date().toLocaleDateString();
+    let yPosition = 20;
+
+    // Header
+    doc.setFontSize(20);
+    doc.text('SmileCare Dental Report', 20, yPosition);
+    yPosition += 10;
+    
+    doc.setFontSize(12);
+    doc.text(`Report Type: ${reportType.charAt(0).toUpperCase() + reportType.slice(1)}`, 20, yPosition);
+    yPosition += 7;
+    doc.text(`Generated: ${currentDate}`, 20, yPosition);
+    yPosition += 7;
+    
+    if (startDate || endDate) {
+      doc.text(`Date Range: ${startDate || 'Start'} to ${endDate || 'End'}`, 20, yPosition);
+      yPosition += 10;
+    } else {
+      yPosition += 3;
+    }
+
+    // Report Content
+    if (reportType === 'appointments' && reportData.appointments) {
+      const { appointments, totalAppointments, confirmedAppointments, pendingAppointments } = reportData.appointments;
+      
+      // Summary
+      doc.setFontSize(16);
+      doc.text('Appointments Summary', 20, yPosition);
+      yPosition += 10;
+      
+      doc.setFontSize(12);
+      doc.text(`Total Appointments: ${totalAppointments}`, 20, yPosition);
+      yPosition += 7;
+      doc.text(`Confirmed: ${confirmedAppointments}`, 20, yPosition);
+      yPosition += 7;
+      doc.text(`Pending: ${pendingAppointments}`, 20, yPosition);
+      yPosition += 15;
+
+      // Appointments Table
+      if (appointments && appointments.length > 0) {
+        const tableData = appointments.map(apt => [
+          apt.patientName || 'N/A',
+          apt.doctorName || 'N/A',
+          apt.treatmentType || 'N/A',
+          apt.appointmentDate || 'N/A',
+          apt.appointmentTime || 'N/A',
+          apt.status || 'N/A'
+        ]);
+
+        (doc as any).autoTable({
+          startY: yPosition,
+          head: [['Patient', 'Doctor', 'Treatment', 'Date', 'Time', 'Status']],
+          body: tableData,
+          styles: { fontSize: 10 },
+          headStyles: { fillColor: [37, 99, 235] },
+        });
+      }
+    }
+    
+    if (reportType === 'financial' && reportData.payments) {
+      const { payments, totalRevenue, totalPatientPaid } = reportData.payments;
+      
+      // Summary
+      doc.setFontSize(16);
+      doc.text('Financial Summary', 20, yPosition);
+      yPosition += 10;
+      
+      doc.setFontSize(12);
+      doc.text(`Total Revenue: $${totalRevenue?.toFixed(2) || '0.00'}`, 20, yPosition);
+      yPosition += 7;
+      doc.text(`Patient Payments: $${totalPatientPaid?.toFixed(2) || '0.00'}`, 20, yPosition);
+      yPosition += 15;
+
+      // Payments Table
+      if (payments && payments.length > 0) {
+        const tableData = payments.map(payment => [
+          payment.patientName || 'N/A',
+          payment.procedure || 'N/A',
+          `$${payment.amount?.toFixed(2) || '0.00'}`,
+          payment.paymentMethod || 'N/A',
+          payment.date || 'N/A',
+          payment.status || 'N/A'
+        ]);
+
+        (doc as any).autoTable({
+          startY: yPosition,
+          head: [['Patient', 'Procedure', 'Amount', 'Method', 'Date', 'Status']],
+          body: tableData,
+          styles: { fontSize: 10 },
+          headStyles: { fillColor: [37, 99, 235] },
+        });
+      }
+    }
+
+    if (reportType === 'patients' && reportData.patients) {
+      const { patients, totalPatients, newPatientsThisMonth } = reportData.patients;
+      
+      // Summary
+      doc.setFontSize(16);
+      doc.text('Patients Summary', 20, yPosition);
+      yPosition += 10;
+      
+      doc.setFontSize(12);
+      doc.text(`Total Patients: ${totalPatients}`, 20, yPosition);
+      yPosition += 7;
+      doc.text(`New This Month: ${newPatientsThisMonth}`, 20, yPosition);
+      yPosition += 15;
+
+      // Patients Table
+      if (patients && patients.length > 0) {
+        const tableData = patients.map(patient => [
+          patient.firstName || 'N/A',
+          patient.lastName || 'N/A',
+          patient.email || 'N/A',
+          patient.createdAt ? new Date(patient.createdAt).toLocaleDateString() : 'N/A'
+        ]);
+
+        (doc as any).autoTable({
+          startY: yPosition,
+          head: [['First Name', 'Last Name', 'Email', 'Registered']],
+          body: tableData,
+          styles: { fontSize: 10 },
+          headStyles: { fillColor: [37, 99, 235] },
+        });
+      }
+    }
+
+    // Save PDF
+    const filename = `smilecare-${reportType}-report-${currentDate.replace(/\//g, '-')}.pdf`;
+    doc.save(filename);
   };
 
   const exportToCSV = (data: any[], filename: string) => {
@@ -431,6 +569,16 @@ export function ReportsManagement() {
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2">
+                {/* PDF Export Button - Universal for all reports */}
+                <Button
+                  onClick={exportToPDF}
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                >
+                  <FileDown className="h-4 w-4 mr-2" />
+                  Export PDF Report
+                </Button>
+
+                {/* CSV Export Buttons - Specific data exports */}
                 {reportType === 'appointments' && reportData.appointments?.appointments && (
                   <Button
                     variant="outline"
