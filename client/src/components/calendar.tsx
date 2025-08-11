@@ -261,6 +261,7 @@ export default function Calendar() {
                     <SelectValue placeholder="Select treatment" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="new-patient">New Patient Consultation (Don't know what you need?)</SelectItem>
                     <SelectItem value="cleaning">Routine Cleaning</SelectItem>
                     <SelectItem value="checkup">General Checkup</SelectItem>
                     <SelectItem value="filling">Dental Filling</SelectItem>
