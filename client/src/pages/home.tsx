@@ -309,22 +309,13 @@ END:VCALENDAR`;
                     Download Forms
                   </button>
                   {(user as any)?.role === 'admin' && (
-                    <>
-                      <button 
-                        onClick={() => setActiveView('reports')}
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center"
-                      >
-                        <BarChart3 className="w-4 h-4 mr-3 text-gray-400" />
-                        Reports & Analytics
-                      </button>
-                      <button 
-                        onClick={() => setActiveView('admin-panel')}
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center"
-                      >
-                        <Shield className="w-4 h-4 mr-3 text-gray-400" />
-                        Quick Management
-                      </button>
-                    </>
+                    <button 
+                      onClick={() => setActiveView('admin-panel')}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center"
+                    >
+                      <Shield className="w-4 h-4 mr-3 text-gray-400" />
+                      Admin Panel
+                    </button>
                   )}
                 </div>
               </CardContent>

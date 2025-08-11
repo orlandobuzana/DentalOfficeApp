@@ -10,11 +10,12 @@ import { ProcedureList } from "@/components/admin/procedure-list";
 import { PromotionList } from "@/components/admin/promotion-list";
 import { FormUpload } from "@/components/admin/form-upload";
 import { FormsList } from "@/components/admin/forms-list";
+import { ReportsManagement } from "@/components/reports-management";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { CalendarCheck, Users, DollarSign, Clock, UserPlus, FileText, Calendar, Settings, MessageSquare, Stethoscope, Percent } from "lucide-react";
+import { CalendarCheck, Users, DollarSign, Clock, UserPlus, FileText, Calendar, Settings, MessageSquare, Stethoscope, Percent, BarChart3 } from "lucide-react";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -39,6 +40,7 @@ export default function Admin() {
   const [showProcedures, setShowProcedures] = useState(false);
   const [showPromotions, setShowPromotions] = useState(false);
   const [showForms, setShowForms] = useState(false);
+  const [showReports, setShowReports] = useState(false);
 
   // Redirect to home if not authenticated or not admin
   useEffect(() => {
@@ -392,6 +394,14 @@ export default function Admin() {
                   <FileText className="h-8 w-8 text-gray-400 group-hover:text-blue-600 mb-2 mx-auto" />
                   <p className="text-sm font-medium text-gray-700 group-hover:text-blue-600">Manage PDF Forms</p>
                 </button>
+
+                <button 
+                  onClick={() => setShowReports(true)}
+                  className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-600 hover:bg-blue-50 transition-colors group"
+                >
+                  <BarChart3 className="h-8 w-8 text-gray-400 group-hover:text-blue-600 mb-2 mx-auto" />
+                  <p className="text-sm font-medium text-gray-700 group-hover:text-blue-600">Reports & Analytics</p>
+                </button>
               </div>
             </CardContent>
           </Card>
@@ -440,6 +450,21 @@ export default function Admin() {
               </Button>
             </div>
             <FormsList />
+          </div>
+        )}
+
+        {showReports && (
+          <div className="mt-8">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-2xl font-bold text-gray-900">Reports & Analytics</h3>
+              <Button
+                variant="outline"
+                onClick={() => setShowReports(false)}
+              >
+                Close
+              </Button>
+            </div>
+            <ReportsManagement />
           </div>
         )}
 
