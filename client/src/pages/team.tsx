@@ -124,15 +124,7 @@ export default function Team() {
           </div>
         )}
 
-        {!isLoading && displayTeamMembers.length === 0 && (
-          <div className="text-center py-12">
-            <div className="max-w-md mx-auto">
-              <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No Team Members</h3>
-              <p className="text-gray-600">Team information will be available soon.</p>
-            </div>
-          </div>
-        )}
+        {!isLoading && displayTeamMembers.length === 0 && null}
       </div>
     </div>
   );

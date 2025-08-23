@@ -265,11 +265,7 @@ END:VCALENDAR`;
                       );
                     })}
                   </div>
-                ) : (
-                  <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <p className="text-gray-500 text-center">No upcoming appointments scheduled</p>
-                  </div>
-                )}
+                ) : null}
               </div>
             </div>
 
