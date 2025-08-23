@@ -8,13 +8,7 @@ export default function NotFound() {
       <div className="min-h-screen flex items-center justify-center p-4">
         <Card className="w-full max-w-2xl mx-auto shadow-xl border-0 bg-white/90 backdrop-blur-sm">
           <CardContent className="pt-8 pb-8 px-8 text-center">
-            <div className="flex items-center justify-center mb-6">
-              <Smile className="h-16 w-16 text-blue-600 mr-4" />
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">SmileCare Dental</h1>
-                <p className="text-sm text-gray-600">Your Trusted Dental Care Partner</p>
-              </div>
-            </div>
+
 
             <div className="mb-6">
               <Heart className="h-12 w-12 text-red-500 mx-auto mb-4" />
@@ -50,11 +44,7 @@ export default function NotFound() {
               Return to Home
             </Button>
 
-            <div className="mt-6 pt-6 border-t border-gray-200">
-              <p className="text-xs text-gray-500">
-                SmileCare Dental - Excellence in Oral Healthcare
-              </p>
-            </div>
+
           </CardContent>
         </Card>
       </div>
