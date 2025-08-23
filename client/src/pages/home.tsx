@@ -308,15 +308,7 @@ END:VCALENDAR`;
                     <Download className="w-4 h-4 mr-3 text-purple-500" />
                     Download Forms
                   </button>
-                  {(user as any)?.role === 'admin' && (
-                    <button 
-                      onClick={() => setActiveView('admin-panel')}
-                      className="w-full text-left px-4 py-3 text-sm text-white bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 rounded-lg flex items-center transition-all duration-200 hover:transform hover:translate-x-1 hover:shadow-lg"
-                    >
-                      <Shield className="w-4 h-4 mr-3 text-white" />
-                      Admin Panel
-                    </button>
-                  )}
+
                 </div>
               </CardContent>
             </Card>

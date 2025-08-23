@@ -35,8 +35,8 @@ export default function Navigation() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
-            <Heart className="text-gradient text-2xl mr-3 pulse-glow" />
-            <h1 className="text-xl font-bold text-gradient">SmileCare Dental</h1>
+            <Heart className="w-6 h-6 text-blue-600 mr-3" />
+            <h1 className="text-xl font-bold text-gray-900">SmileCare Dental</h1>
           </div>
           
           {/* Navigation Tabs */}
@@ -46,8 +46,8 @@ export default function Navigation() {
                 <button
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     isActive(item.path)
-                      ? 'text-white bg-gradient-primary shadow-lg transform -translate-y-0.5'
-                      : 'text-gray-700 hover:text-white hover:bg-gradient-primary hover:shadow-md hover:transform hover:-translate-y-0.5'
+                      ? 'text-white bg-blue-600 shadow-lg'
+                      : 'text-gray-700 hover:text-white hover:bg-blue-500 hover:shadow-md'
                   }`}
                 >
                   {item.label}
