@@ -1,18 +1,11 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Heart, Smile, ArrowLeft } from "lucide-react";
-import { useLocation } from "wouter";
 
 export default function NotFound() {
-  const [location] = useLocation();
-  const isAdminRoute = location.startsWith('/admin');
-  
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-blue-50 to-white relative overflow-hidden">
-
-      
-      {/* Content */}
-      <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen w-full bg-gradient-to-br from-blue-50 to-white">
+      <div className="min-h-screen flex items-center justify-center p-4">
         <Card className="w-full max-w-2xl mx-auto shadow-xl border-0 bg-white/90 backdrop-blur-sm">
           <CardContent className="pt-8 pb-8 px-8 text-center">
             <div className="flex items-center justify-center mb-6">
