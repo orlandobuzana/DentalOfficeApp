@@ -187,17 +187,7 @@ END:VCALENDAR`;
                   </h2>
                   <p className="text-gray-600 text-lg">Here's what's coming up for your dental care.</p>
                 </div>
-                {(user as any)?.role !== 'admin' && (
-                  <Button
-                    onClick={() => promoteToAdminMutation.mutate()}
-                    disabled={promoteToAdminMutation.isPending}
-                    variant="outline"
-                    size="sm"
-                  >
-                    <Shield className="w-4 h-4 mr-2" />
-                    {promoteToAdminMutation.isPending ? 'Promoting...' : 'Become Admin'}
-                  </Button>
-                )}
+
               </div>
 
               {/* Upcoming Appointments in Jumbotron */}

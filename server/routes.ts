@@ -533,16 +533,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const convertTo24Hour = (time12h: string) => {
     const [time, modifier] = time12h.split(' ');
     let [hours, minutes] = time.split(':');
+    let hoursNum = parseInt(hours, 10);
     
-    if (hours === '12') {
-      hours = '00';
+    if (hoursNum === 12) {
+      hoursNum = 0;
     }
     
     if (modifier === 'PM') {
-      hours = parseInt(hours, 10) + 12;
+      hoursNum = hoursNum + 12;
     }
     
-    return `${String(hours).padStart(2, '0')}:${minutes}:00`;
+    return `${String(hoursNum).padStart(2, '0')}:${minutes}:00`;
   };
 
   // Reports routes
