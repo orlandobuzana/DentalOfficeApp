@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 
@@ -167,25 +167,30 @@ export default function Calendar() {
   const doctorsList = doctors.length > 0 ? doctors : ["Dr. Sarah Johnson", "Dr. Mike Chen", "Dr. James Wilson"];
 
   return (
-    <Card>
+    <Card className="card-elevated glass-effect">
       <CardHeader>
         <div className="flex justify-between items-center">
-          <CardTitle>Book an Appointment</CardTitle>
+          <CardTitle className="flex items-center gap-2 text-gradient">
+            <CalendarIcon className="w-5 h-5 text-blue-600" />
+            Book an Appointment
+          </CardTitle>
           <div className="flex items-center space-x-2">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigateMonth('prev')}
+              className="hover:bg-blue-100 hover:text-blue-600 transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
             </Button>
-            <span className="text-lg font-medium text-gray-900 min-w-[120px] text-center">
+            <span className="text-lg font-semibold text-gradient min-w-[120px] text-center">
               {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
             </span>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigateMonth('next')}
+              className="hover:bg-blue-100 hover:text-blue-600 transition-colors"
             >
               <ChevronRight className="w-4 h-4" />
             </Button>
@@ -207,14 +212,14 @@ export default function Calendar() {
               onClick={() => day.isCurrentMonth && handleDateClick(day.fullDate, !!day.isPast)}
               disabled={!day.isCurrentMonth || !!day.isPast}
               className={`
-                text-center py-3 text-sm rounded transition-colors
+                text-center py-3 text-sm rounded-lg transition-all duration-200
                 ${!day.isCurrentMonth 
                   ? 'text-gray-400' 
                   : day.isPast
                   ? 'text-gray-400 cursor-not-allowed'
                   : selectedDate === day.fullDate
-                  ? 'bg-blue-600 text-white font-medium'
-                  : 'text-gray-900 hover:bg-gray-100 cursor-pointer'
+                  ? 'gradient-primary text-white font-semibold shadow-lg transform scale-105'
+                  : 'text-gray-900 hover:bg-gradient-to-br hover:from-blue-50 hover:to-cyan-50 hover:text-blue-700 hover:shadow-md hover:transform hover:scale-105 cursor-pointer'
                 }
               `}
             >
@@ -306,7 +311,7 @@ export default function Calendar() {
                           variant={selectedTime === time ? "default" : "outline"}
                           size="sm"
                           onClick={() => setSelectedTime(time)}
-                          className="text-sm"
+                          className={`text-sm transition-all duration-200 ${selectedTime === time ? 'gradient-primary text-white shadow-lg transform scale-105' : 'hover:bg-blue-50 hover:border-blue-300 hover:shadow-md'}`}
                         >
                           {time}
                         </Button>
@@ -319,7 +324,7 @@ export default function Calendar() {
                           variant={selectedTime === time ? "default" : "outline"}
                           size="sm"
                           onClick={() => setSelectedTime(time)}
-                          className="text-sm"
+                          className={`text-sm transition-all duration-200 ${selectedTime === time ? 'gradient-primary text-white shadow-lg transform scale-105' : 'hover:bg-blue-50 hover:border-blue-300 hover:shadow-md'}`}
                         >
                           {time}
                         </Button>
@@ -331,7 +336,7 @@ export default function Calendar() {
                 <Button
                   onClick={handleBookAppointment}
                   disabled={!selectedTime || !treatmentType || createAppointmentMutation.isPending}
-                  className="w-full"
+                  className="w-full btn-primary-gradient font-semibold py-3 text-lg"
                 >
                   {createAppointmentMutation.isPending ? "Booking..." : "Book Selected Time"}
                 </Button>

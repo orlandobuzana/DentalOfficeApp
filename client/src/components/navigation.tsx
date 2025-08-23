@@ -31,12 +31,12 @@ export default function Navigation() {
   }
 
   return (
-    <nav className="bg-white shadow-sm border-b border-gray-200">
+    <nav className="glass-effect border-b border-white/20 backdrop-blur-xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
-            <Heart className="text-blue-600 text-2xl mr-3" />
-            <h1 className="text-xl font-semibold text-gray-900">SmileCare Dental</h1>
+            <Heart className="text-gradient text-2xl mr-3 pulse-glow" />
+            <h1 className="text-xl font-bold text-gradient">SmileCare Dental</h1>
           </div>
           
           {/* Navigation Tabs */}
@@ -44,10 +44,10 @@ export default function Navigation() {
             {navItems.map((item) => (
               <Link key={item.path} href={item.path}>
                 <button
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     isActive(item.path)
-                      ? 'text-blue-600 border-b-2 border-blue-600'
-                      : 'text-gray-500 hover:text-gray-700'
+                      ? 'text-white bg-gradient-primary shadow-lg transform -translate-y-0.5'
+                      : 'text-gray-700 hover:text-white hover:bg-gradient-primary hover:shadow-md hover:transform hover:-translate-y-0.5'
                   }`}
                 >
                   {item.label}
@@ -61,16 +61,16 @@ export default function Navigation() {
               <img 
                 src={(user as any)?.profileImageUrl || 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150'} 
                 alt="User Profile" 
-                className="w-8 h-8 rounded-full object-cover"
+                className="w-8 h-8 rounded-full object-cover ring-2 ring-blue-500/50 hover:ring-blue-500 transition-all"
               />
-              <span className="text-sm text-gray-700">
+              <span className="text-sm font-medium text-gray-700">
                 {(user as any)?.firstName || 'User'}
               </span>
             </div>
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" className="hover:bg-red-100 hover:text-red-600 transition-colors">
                   <LogOut className="w-4 h-4" />
                 </Button>
               </DropdownMenuTrigger>

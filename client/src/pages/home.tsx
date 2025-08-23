@@ -172,20 +172,20 @@ END:VCALENDAR`;
 
   // Dashboard content
   const dashboardContent = () => (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-teal-50">
       <Navigation />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Welcome Section */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <div className="glass-effect rounded-xl card-elevated p-8 mb-6">
               <div className="flex justify-between items-start mb-6">
                 <div>
-                  <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+                  <h2 className="text-3xl font-bold text-gradient mb-3">
                     Welcome back, {(user as any)?.firstName || 'Patient'}!
                   </h2>
-                  <p className="text-gray-600">Here's what's coming up for your dental care.</p>
+                  <p className="text-gray-600 text-lg">Here's what's coming up for your dental care.</p>
                 </div>
                 {(user as any)?.role !== 'admin' && (
                   <Button
@@ -202,7 +202,7 @@ END:VCALENDAR`;
 
               {/* Upcoming Appointments in Jumbotron */}
               <div className="mb-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-3">Upcoming Appointments</h3>
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">Upcoming Appointments</h3>
                 {appointmentsLoading ? (
                   <div className="space-y-3">
                     <div className="animate-pulse bg-gray-200 h-16 rounded"></div>
@@ -223,7 +223,7 @@ END:VCALENDAR`;
                       const isPast = appointmentDateTime < now;
                       
                       return (
-                        <div key={appointment.id} className={`p-4 rounded-lg border-l-4 ${isPast ? 'bg-red-50 border-red-600' : 'bg-blue-50 border-blue-600'}`}>
+                        <div key={appointment.id} className={`p-4 rounded-xl border-l-4 card-elevated transition-all hover:scale-[1.02] ${isPast ? 'bg-gradient-to-r from-red-50 to-red-25 border-red-500' : 'bg-gradient-to-r from-blue-50 to-cyan-25 border-blue-500 pulse-glow'}`}>
                           <div className="flex justify-between items-start">
                             <div className="flex-1">
                               <div className="flex items-center gap-2">
@@ -281,39 +281,39 @@ END:VCALENDAR`;
           <div className="space-y-6">
 
             {/* Quick Actions */}
-            <Card>
+            <Card className="card-elevated glass-effect">
               <CardHeader>
-                <CardTitle className="text-lg">Quick Actions</CardTitle>
+                <CardTitle className="text-lg text-gradient">Quick Actions</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
                   <button 
                     onClick={() => setActiveView('medical-records')}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center"
+                    className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 rounded-lg flex items-center transition-all duration-200 hover:transform hover:translate-x-1"
                   >
-                    <FileText className="w-4 h-4 mr-3 text-gray-400" />
+                    <FileText className="w-4 h-4 mr-3 text-blue-500" />
                     View Medical Records
                   </button>
                   <button 
                     onClick={() => setActiveView('payment-history')}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center"
+                    className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-green-50 hover:to-emerald-50 rounded-lg flex items-center transition-all duration-200 hover:transform hover:translate-x-1"
                   >
-                    <CreditCard className="w-4 h-4 mr-3 text-gray-400" />
+                    <CreditCard className="w-4 h-4 mr-3 text-green-500" />
                     Payment History
                   </button>
                   <button 
                     onClick={() => setActiveView('download-forms')}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center"
+                    className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 rounded-lg flex items-center transition-all duration-200 hover:transform hover:translate-x-1"
                   >
-                    <Download className="w-4 h-4 mr-3 text-gray-400" />
+                    <Download className="w-4 h-4 mr-3 text-purple-500" />
                     Download Forms
                   </button>
                   {(user as any)?.role === 'admin' && (
                     <button 
                       onClick={() => setActiveView('admin-panel')}
-                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center"
+                      className="w-full text-left px-4 py-3 text-sm text-white bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 rounded-lg flex items-center transition-all duration-200 hover:transform hover:translate-x-1 hover:shadow-lg"
                     >
-                      <Shield className="w-4 h-4 mr-3 text-gray-400" />
+                      <Shield className="w-4 h-4 mr-3 text-white" />
                       Admin Panel
                     </button>
                   )}
