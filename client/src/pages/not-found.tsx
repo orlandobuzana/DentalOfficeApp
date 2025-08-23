@@ -21,20 +21,7 @@ export default function NotFound() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 text-sm">
-              <div className="p-4 bg-blue-50 rounded-lg">
-                <div className="font-semibold text-blue-800">Appointment Booking</div>
-                <div className="text-blue-600">Schedule your visit</div>
-              </div>
-              <div className="p-4 bg-green-50 rounded-lg">
-                <div className="font-semibold text-green-800">Patient Portal</div>
-                <div className="text-green-600">Manage your care</div>
-              </div>
-              <div className="p-4 bg-purple-50 rounded-lg">
-                <div className="font-semibold text-purple-800">Dental Resources</div>
-                <div className="text-purple-600">Learn about oral health</div>
-              </div>
-            </div>
+
 
             <Button 
               onClick={() => window.location.href = '/'}
