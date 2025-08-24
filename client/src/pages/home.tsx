@@ -69,16 +69,12 @@ export default function Home() {
       return response.json();
     },
     onSuccess: (data) => {
-      console.log('Promotion successful:', data);
       toast({
         title: "Success!",
-        description: "You've been promoted to admin. Please refresh the page to see admin options.",
+        description: "You're now an admin. Refreshing...",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      // Auto-refresh the page after a short delay
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
+      window.location.reload();
     },
     onError: (error) => {
       console.error('Promotion error:', error);
