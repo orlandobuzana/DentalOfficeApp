@@ -189,7 +189,7 @@ END:VCALENDAR`;
               <div className="flex justify-between items-start mb-6">
                 <div>
                   <h2 className="text-3xl font-bold text-gradient mb-3">
-                    Welcome back, {(user as any)?.firstName || 'Patient'}!
+                    Welcome back, {user?.firstName || 'Patient'}!
                   </h2>
                   <p className="text-gray-600 text-lg">Here's what's coming up for your dental care.</p>
                   
@@ -337,7 +337,7 @@ END:VCALENDAR`;
                   </button>
 
                   {/* Become Admin button - only show for non-admin users */}
-                  {user && (user as any).role !== 'admin' && (
+                  {user && user.role !== 'admin' && (
                     <button 
                       onClick={() => promoteToAdminMutation.mutate()}
                       disabled={promoteToAdminMutation.isPending}
