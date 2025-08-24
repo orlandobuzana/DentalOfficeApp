@@ -7,6 +7,7 @@ import Chatbot from "@/components/chatbot";
 import { PaymentHistory } from "@/components/payment-history";
 import { FormsDownload } from "@/components/forms-download";
 import { ReportsManagement } from "@/components/reports-management";
+import { AllAppointmentsPopup } from "@/components/all-appointments-popup";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -192,7 +193,19 @@ END:VCALENDAR`;
 
               {/* Upcoming Appointments in Jumbotron */}
               <div className="mb-6">
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">Upcoming Appointments</h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-semibold text-gray-900">Upcoming Appointments</h3>
+                  <AllAppointmentsPopup>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                      data-testid="button-see-all-appointments"
+                    >
+                      See All
+                    </Button>
+                  </AllAppointmentsPopup>
+                </div>
                 {appointmentsLoading ? (
                   <div className="space-y-3">
                     <div className="animate-pulse bg-gray-200 h-16 rounded"></div>
