@@ -262,7 +262,7 @@ END:VCALENDAR`;
                       const isPast = appointmentDateTime < now;
                       
                       return (
-                        <div key={appointment.id} className={`p-4 rounded-xl border-l-4 card-elevated transition-all hover:scale-[1.02] ${isPast ? 'bg-gradient-to-r from-red-50 to-red-25 border-red-500' : 'bg-gradient-to-r from-blue-50 to-cyan-25 border-blue-500 pulse-glow'}`}>
+                        <div key={appointment.id} className={`p-4 rounded-xl border-l-4 card-elevated transition-all hover:scale-[1.02] ${isPast ? 'bg-gradient-to-r from-red-50 to-red-25 border-red-500' : 'bg-gradient-to-r from-blue-50 to-cyan-25 border-blue-500'}`}>
                           <div className="flex justify-between items-start">
                             <div className="flex-1">
                               <div className="flex items-center gap-2">

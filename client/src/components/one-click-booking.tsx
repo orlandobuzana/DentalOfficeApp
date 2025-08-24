@@ -305,7 +305,7 @@ export function OneClickBooking() {
               <span>Progress</span>
               <span>{progress}%</span>
             </div>
-            <Progress value={progress} className="h-2 progress-glow" />
+            <Progress value={progress} className="h-2" />
           </div>
 
           {/* Steps Indicator */}
@@ -354,7 +354,7 @@ export function OneClickBooking() {
   }
 
   return (
-    <Card className="card-elevated glass-effect booking-glow">
+    <Card className="card-elevated glass-effect">
       <CardHeader>
         <CardTitle className="text-lg text-gradient flex items-center gap-2">
           <Zap className="w-5 h-5 text-yellow-500" />
