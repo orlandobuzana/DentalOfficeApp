@@ -197,28 +197,7 @@ END:VCALENDAR`;
                   </h2>
                   <p className="text-gray-600 text-lg">Here's what's coming up for your dental care.</p>
                   
-                  {/* Debug info */}
-                  <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-sm">
-                    <p><strong>Debug Info:</strong></p>
-                    <p>User ID: {user?.id}</p>
-                    <p>Email: {user?.email}</p>
-                    <p>Role: {user?.role || 'Not set'}</p>
-                    <p>Is Admin: {user?.role === 'admin' ? 'Yes' : 'No'}</p>
-                    <button 
-                      onClick={() => {
-                        fetch('/api/auth/debug', { credentials: 'include' })
-                          .then(r => r.json())
-                          .then(data => {
-                            console.log('Debug data:', data);
-                            alert(`Session User ID: ${data.sessionUserId}\nDB User: ${JSON.stringify(data.databaseUser, null, 2)}`);
-                          })
-                          .catch(err => console.error('Debug error:', err));
-                      }}
-                      className="mt-2 px-3 py-1 bg-yellow-500 text-white rounded text-xs"
-                    >
-                      Test Debug API
-                    </button>
-                  </div>
+
                 </div>
 
               </div>
