@@ -19,6 +19,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Appointment cleanup endpoint
+  app.post("/api/appointments/cleanup", isAuthenticated, async (req, res) => {
+    try {
+      const { appointmentIds } = req.body;
+      
+      if (!appointmentIds || !Array.isArray(appointmentIds)) {
+        return res.status(400).json({ message: "Invalid appointment IDs" });
+      }
+
+      // Update appointments status to 'missed' or delete them
+      const result = await storage.cleanupMissedAppointments(appointmentIds);
+      
+      res.json({ 
+        message: "Appointments cleaned up successfully",
+        count: result.count 
+      });
+    } catch (error) {
+      console.error("Error cleaning up appointments:", error);
+      res.status(500).json({ message: "Failed to clean up appointments" });
+    }
+  });
+
   // Appointment routes
   app.post("/api/appointments", isAuthenticated, async (req, res) => {
     try {

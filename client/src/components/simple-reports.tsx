@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Download, FileText } from "lucide-react";
+import { Download, FileText, Eye } from "lucide-react";
+import { AppointmentsPopup } from "./appointments-popup";
 
 interface ReportData {
   appointments?: {
@@ -218,7 +219,19 @@ export function SimpleReportsManagement() {
                   
                   {reportData.appointments.appointments?.length > 0 && (
                     <div>
-                      <h4 className="font-medium mb-2">Recent Appointments</h4>
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-medium">Recent Appointments</h4>
+                        <AppointmentsPopup>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            data-testid="button-view-all-appointments"
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            View All
+                          </Button>
+                        </AppointmentsPopup>
+                      </div>
                       <div className="space-y-2 max-h-60 overflow-y-auto">
                         {reportData.appointments.appointments.slice(0, 10).map((apt, i) => (
                           <div key={i} className="p-3 bg-gray-50 rounded text-sm">

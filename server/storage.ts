@@ -49,7 +49,7 @@ import {
   type InsertPatientChallenge,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, gte, desc, asc } from "drizzle-orm";
+import { eq, and, gte, desc, asc, sql, inArray } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (mandatory for Replit Auth)
@@ -61,6 +61,7 @@ export interface IStorage {
   getAppointmentsByPatient(patientId: string): Promise<Appointment[]>;
   getAllAppointments(): Promise<Appointment[]>;
   updateAppointmentStatus(id: string, status: string): Promise<Appointment | undefined>;
+  cleanupMissedAppointments(appointmentIds: string[]): Promise<{ count: number }>;
   
   // Team member operations
   createTeamMember(member: InsertTeamMember): Promise<TeamMember>;
@@ -187,6 +188,17 @@ export class DatabaseStorage implements IStorage {
       .where(eq(appointments.id, id))
       .returning();
     return updated;
+  }
+
+  // Cleanup missed appointments
+  async cleanupMissedAppointments(appointmentIds: string[]): Promise<{ count: number }> {
+    const result = await db
+      .update(appointments)
+      .set({ status: 'missed' })
+      .where(inArray(appointments.id, appointmentIds))
+      .returning({ id: appointments.id });
+    
+    return { count: result.length };
   }
 
   // Team member operations
