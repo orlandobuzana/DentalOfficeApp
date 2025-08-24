@@ -46,7 +46,8 @@ export default function ResourceForm({ onClose, resource }: ResourceFormProps) {
       const method = resource ? 'PUT' : 'POST';
       await apiRequest(method, url, data);
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Resource creation/update successful:', data);
       queryClient.invalidateQueries({ queryKey: ['/api/resources'] });
       toast({
         title: "Success",
@@ -55,6 +56,9 @@ export default function ResourceForm({ onClose, resource }: ResourceFormProps) {
       onClose();
     },
     onError: (error: Error) => {
+      console.error('Resource creation/update error:', error);
+      console.error('Error details:', JSON.stringify(error, null, 2));
+      
       if (isUnauthorizedError(error)) {
         toast({
           title: "Unauthorized",

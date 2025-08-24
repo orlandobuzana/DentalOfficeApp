@@ -325,15 +325,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/resources", isAuthenticated, async (req, res) => {
     try {
       const user = (req as any).user;
-      if (user.claims.role !== 'admin') {
+      const userId = user.claims.sub;
+      
+      // Check user role from database (consistent with team member route)
+      const dbUser = await storage.getUser(userId);
+      if (!dbUser) {
+        return res.status(403).json({ message: "User not found" });
+      }
+      if (dbUser.role !== 'admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
       
+      console.log('About to create resource with:', req.body);
       const resource = await storage.createResource(req.body);
+      console.log('Created resource:', resource);
       res.status(201).json(resource);
     } catch (error) {
       console.error("Error creating resource:", error);
-      res.status(500).json({ message: "Failed to create resource" });
+      console.error("Full error details:", JSON.stringify(error, null, 2));
+      res.status(500).json({ 
+        message: "Failed to create resource",
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
+      });
     }
   });
 
