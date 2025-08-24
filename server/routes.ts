@@ -688,6 +688,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get available time slots for next 7 days (for one-click booking)
+  app.get("/api/time-slots/available", async (req, res) => {
+    try {
+      const availableSlots = [];
+      const today = new Date();
+      
+      // Get slots for next 7 days
+      for (let i = 1; i <= 7; i++) {
+        const checkDate = new Date(today);
+        checkDate.setDate(today.getDate() + i);
+        const dateStr = checkDate.toISOString().split('T')[0];
+        
+        const slots = await storage.getTimeSlots(dateStr);
+        const available = slots.filter(slot => slot.isAvailable);
+        availableSlots.push(...available);
+      }
+      
+      res.json(availableSlots);
+    } catch (error) {
+      console.error("Error fetching available time slots:", error);
+      res.status(500).json({ message: "Failed to fetch available time slots" });
+    }
+  });
+
   app.post("/api/timeslots", isAuthenticated, async (req, res) => {
     try {
       const user = (req as any).user;

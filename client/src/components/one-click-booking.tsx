@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -20,15 +20,14 @@ interface QuickBookingOption {
   availableSlots: number;
 }
 
-const QUICK_BOOKING_OPTIONS: QuickBookingOption[] = [
+const BASE_BOOKING_OPTIONS = [
   {
     id: 'emergency',
     title: 'Emergency Visit',
     description: 'Urgent dental care - next available slot',
     procedure: 'Emergency Consultation',
     estimatedTime: '30-45 min',
-    priority: 'high',
-    availableSlots: 2
+    priority: 'high' as const,
   },
   {
     id: 'checkup',
@@ -36,8 +35,7 @@ const QUICK_BOOKING_OPTIONS: QuickBookingOption[] = [
     description: 'Regular dental examination and cleaning',
     procedure: 'Routine Cleaning',
     estimatedTime: '60 min',
-    priority: 'medium',
-    availableSlots: 8
+    priority: 'medium' as const,
   },
   {
     id: 'consultation',
@@ -45,8 +43,7 @@ const QUICK_BOOKING_OPTIONS: QuickBookingOption[] = [
     description: 'First visit - comprehensive examination',
     procedure: 'New Patient Consultation',
     estimatedTime: '90 min',
-    priority: 'medium',
-    availableSlots: 5
+    priority: 'medium' as const,
   },
   {
     id: 'followup',
@@ -54,8 +51,7 @@ const QUICK_BOOKING_OPTIONS: QuickBookingOption[] = [
     description: 'Check progress from previous treatment',
     procedure: 'Follow-up',
     estimatedTime: '30 min',
-    priority: 'low',
-    availableSlots: 12
+    priority: 'low' as const,
   }
 ];
 
@@ -73,6 +69,40 @@ export function OneClickBooking() {
   const [selectedOption, setSelectedOption] = useState<QuickBookingOption | null>(null);
   const [currentStep, setCurrentStep] = useState(1);
   const [progress, setProgress] = useState(0);
+
+  // Fetch available time slots for the next 7 days
+  const { data: slotsData, isLoading: slotsLoading } = useQuery({
+    queryKey: ['/api/time-slots/available'],
+    retry: false,
+  });
+
+  // Calculate available slots for each booking type
+  const getAvailableSlotsForType = (procedureType: string): number => {
+    const availableSlots = Array.isArray(slotsData) ? slotsData : [];
+    
+    if (availableSlots.length === 0) return 0;
+    
+    // For emergency, count all available slots (highest priority)
+    if (procedureType === 'Emergency Consultation') {
+      return availableSlots.length;
+    }
+    
+    // For other types, simulate availability based on slot distribution
+    const totalSlots = availableSlots.length;
+    const availabilityRatio = {
+      'Routine Cleaning': 0.4, // 40% of slots suitable for cleanings
+      'New Patient Consultation': 0.25, // 25% for new patients (longer appointments)  
+      'Follow-up': 0.6, // 60% for follow-ups (shorter, flexible)
+    };
+    
+    return Math.floor(totalSlots * (availabilityRatio[procedureType as keyof typeof availabilityRatio] || 0.3));
+  };
+
+  // Create booking options with real slot counts
+  const QUICK_BOOKING_OPTIONS: QuickBookingOption[] = BASE_BOOKING_OPTIONS.map(option => ({
+    ...option,
+    availableSlots: getAvailableSlotsForType(option.procedure)
+  }));
   const [isBooking, setIsBooking] = useState(false);
   const [bookedAppointment, setBookedAppointment] = useState<any>(null);
 
@@ -339,8 +369,12 @@ export function OneClickBooking() {
           {QUICK_BOOKING_OPTIONS.map((option) => (
             <div
               key={option.id}
-              className={`p-4 rounded-lg border-l-4 transition-all cursor-pointer hover:shadow-md hover:scale-[1.02] ${getPriorityColor(option.priority)}`}
-              onClick={() => handleQuickBook(option)}
+              className={`p-4 rounded-lg border-l-4 transition-all ${
+                option.availableSlots === 0 
+                  ? 'opacity-60 cursor-not-allowed bg-gray-50 border-gray-300' 
+                  : `cursor-pointer hover:shadow-md hover:scale-[1.02] ${getPriorityColor(option.priority)}`
+              }`}
+              onClick={() => option.availableSlots > 0 && handleQuickBook(option)}
             >
               <div className="flex justify-between items-start">
                 <div className="flex-1">
@@ -354,22 +388,29 @@ export function OneClickBooking() {
                       <Clock className="w-3 h-3" />
                       {option.estimatedTime}
                     </span>
-                    <span className="flex items-center gap-1">
+                    <span className={`flex items-center gap-1 ${option.availableSlots === 0 ? 'text-red-500' : ''}`}>
                       <Calendar className="w-3 h-3" />
-                      {option.availableSlots} slots available
+                      {option.availableSlots === 0 ? '0 slots available' : `${option.availableSlots} slots available`}
                     </span>
                   </div>
                 </div>
                 <Button
                   size="sm"
-                  className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white border-none shadow-lg"
+                  disabled={option.availableSlots === 0}
+                  className={`${
+                    option.availableSlots === 0
+                      ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600'
+                  } text-white border-none shadow-lg`}
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleQuickBook(option);
+                    if (option.availableSlots > 0) {
+                      handleQuickBook(option);
+                    }
                   }}
                 >
                   <Zap className="w-3 h-3 mr-1" />
-                  Book Now
+                  {option.availableSlots === 0 ? 'No Slots' : 'Book Now'}
                 </Button>
               </div>
             </div>
