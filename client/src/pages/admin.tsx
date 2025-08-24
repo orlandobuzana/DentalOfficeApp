@@ -10,7 +10,7 @@ import { ProcedureList } from "@/components/admin/procedure-list";
 import { PromotionList } from "@/components/admin/promotion-list";
 import { FormUpload } from "@/components/admin/form-upload";
 import { FormsList } from "@/components/admin/forms-list";
-import { ReportsManagement } from "@/components/reports-management";
+import { SimpleReportsManagement } from "@/components/simple-reports";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -417,7 +417,7 @@ export default function Admin() {
                       <DialogTitle>Reports & Analytics</DialogTitle>
                     </DialogHeader>
                     <div className="overflow-y-auto max-h-[80vh] pr-2">
-                      <ReportsManagement />
+                      <SimpleReportsManagement />
                     </div>
                   </DialogContent>
                 </Dialog>
