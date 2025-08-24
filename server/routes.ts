@@ -215,6 +215,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/team", isAuthenticated, async (req, res) => {
     try {
       const user = (req as any).user;
+      console.log('Session user:', user);
       const userId = user.claims.sub;
       
       // Check user role from database 
@@ -226,9 +227,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Admin access required" });
       }
       
-      // Log the request data for debugging
-      console.log('Creating team member with data:', req.body);
-      
       // Validate required fields
       if (!req.body.name || !req.body.position || !req.body.bio) {
         return res.status(400).json({ 
@@ -236,10 +234,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      console.log('About to create team member with:', req.body);
       const teamMember = await storage.createTeamMember(req.body);
+      console.log('Created team member:', teamMember);
       res.status(201).json(teamMember);
     } catch (error) {
       console.error("Error creating team member:", error);
+      console.error("Full error details:", JSON.stringify(error, null, 2));
       
       // More detailed error messages
       if (error instanceof Error) {
