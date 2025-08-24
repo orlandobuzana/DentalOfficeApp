@@ -42,9 +42,11 @@ export default function ResourceForm({ onClose, resource }: ResourceFormProps) {
 
   const createMutation = useMutation({
     mutationFn: async (data: ResourceFormData) => {
+      console.log('Submitting resource data:', data);
       const url = resource ? `/api/resources/${resource.id}` : '/api/resources';
       const method = resource ? 'PUT' : 'POST';
-      await apiRequest(method, url, data);
+      const response = await apiRequest(method, url, data);
+      return await response.json();
     },
     onSuccess: (data) => {
       console.log('Resource creation/update successful:', data);
@@ -79,6 +81,37 @@ export default function ResourceForm({ onClose, resource }: ResourceFormProps) {
   });
 
   const onSubmit = (data: ResourceFormData) => {
+    console.log('Form data being submitted:', data);
+    console.log('Form validation errors:', form.formState.errors);
+    
+    // Validate required fields locally first
+    if (!data.title?.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Title is required",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!data.description?.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Description is required",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!data.type?.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Type is required",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     createMutation.mutate(data);
   };
 
