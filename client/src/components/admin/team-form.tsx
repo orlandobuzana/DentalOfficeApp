@@ -128,7 +128,8 @@ export default function TeamForm({ onClose, member }: TeamFormProps) {
         return apiRequest('POST', '/api/team', finalData);
       }
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Team member creation/update successful:', data);
       queryClient.invalidateQueries({ queryKey: ['/api/team'] });
       toast({
         title: "Success",
@@ -138,6 +139,7 @@ export default function TeamForm({ onClose, member }: TeamFormProps) {
     },
     onError: (error: Error) => {
       console.error('Team member creation/update error:', error);
+      console.error('Error details:', JSON.stringify(error, null, 2));
       
       if (isUnauthorizedError(error)) {
         toast({
