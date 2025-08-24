@@ -62,21 +62,29 @@ export default function Home() {
         credentials: 'include',
       });
       if (!response.ok) {
-        throw new Error('Failed to promote to admin');
+        const errorText = await response.text();
+        console.error('Promote admin failed:', response.status, errorText);
+        throw new Error(`Failed to promote to admin: ${response.status}`);
       }
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Promotion successful:', data);
       toast({
         title: "Success!",
-        description: "You've been promoted to admin. Refresh the page to see admin options.",
+        description: "You've been promoted to admin. Please refresh the page to see admin options.",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      // Auto-refresh the page after a short delay
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
     },
     onError: (error) => {
+      console.error('Promotion error:', error);
       toast({
-        title: "Error",
-        description: "Failed to promote to admin",
+        title: "Promotion Failed",
+        description: error.message || "Failed to promote to admin",
         variant: "destructive",
       });
     },
@@ -188,6 +196,29 @@ END:VCALENDAR`;
                     Welcome back, {(user as any)?.firstName || 'Patient'}!
                   </h2>
                   <p className="text-gray-600 text-lg">Here's what's coming up for your dental care.</p>
+                  
+                  {/* Debug info */}
+                  <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-sm">
+                    <p><strong>Debug Info:</strong></p>
+                    <p>User ID: {user?.id}</p>
+                    <p>Email: {user?.email}</p>
+                    <p>Role: {user?.role || 'Not set'}</p>
+                    <p>Is Admin: {user?.role === 'admin' ? 'Yes' : 'No'}</p>
+                    <button 
+                      onClick={() => {
+                        fetch('/api/auth/debug', { credentials: 'include' })
+                          .then(r => r.json())
+                          .then(data => {
+                            console.log('Debug data:', data);
+                            alert(`Session User ID: ${data.sessionUserId}\nDB User: ${JSON.stringify(data.databaseUser, null, 2)}`);
+                          })
+                          .catch(err => console.error('Debug error:', err));
+                      }}
+                      className="mt-2 px-3 py-1 bg-yellow-500 text-white rounded text-xs"
+                    >
+                      Test Debug API
+                    </button>
+                  </div>
                 </div>
 
               </div>

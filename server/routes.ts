@@ -11,7 +11,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
+      console.log('Fetching user with ID:', userId);
       const user = await storage.getUser(userId);
+      console.log('Found user:', user);
       res.json(user);
     } catch (error) {
       console.error("Error fetching user:", error);
@@ -19,17 +21,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Debug endpoint to check current user info
+  app.get('/api/auth/debug', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      res.json({
+        sessionUserId: userId,
+        databaseUser: user,
+        claims: req.user.claims
+      });
+    } catch (error) {
+      console.error("Debug error:", error);
+      res.status(500).json({ message: "Debug failed" });
+    }
+  });
+
   app.post('/api/auth/promote-admin', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
+      console.log('Promoting user to admin:', userId);
       
       // Update user role to admin in storage
       const updatedUser = await storage.updateUserRole(userId, 'admin');
+      console.log('User after promotion:', updatedUser);
       
       if (!updatedUser) {
+        console.log('User not found during promotion');
         return res.status(404).json({ message: "User not found" });
       }
       
+      console.log('Admin promotion successful for user:', userId);
       res.json({
         success: true,
         message: "User promoted to admin successfully",
@@ -221,6 +243,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Check user role from database (not from claims which might be stale)
       const dbUser = await storage.getUser(userId);
+      console.log('Team creation - checking user:', userId, 'role:', dbUser?.role || 'no user found');
       if (!dbUser || dbUser.role !== 'admin') {
         console.log('Access denied - user role:', dbUser?.role || 'no user found');
         return res.status(403).json({ message: "Admin access required" });
