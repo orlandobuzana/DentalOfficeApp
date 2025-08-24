@@ -250,7 +250,7 @@ export function OneClickBooking() {
             <Button 
               onClick={resetBooking}
               variant="outline"
-              className="flex-1"
+              className="flex-1 button-animate"
             >
               Book Another
             </Button>
@@ -270,7 +270,7 @@ export function OneClickBooking() {
                 
                 window.open(googleCalendarUrl, '_blank');
               }}
-              className="flex-1"
+              className="flex-1 button-animate"
             >
               Add to Calendar
             </Button>
@@ -369,7 +369,7 @@ export function OneClickBooking() {
           {QUICK_BOOKING_OPTIONS.map((option) => (
             <div
               key={option.id}
-              className={`p-4 rounded-lg border-l-4 transition-all ${
+              className={`p-4 rounded-lg border-l-4 transition-all interactive-hover slide-up-animate ${
                 option.availableSlots === 0 
                   ? 'opacity-60 cursor-not-allowed bg-gray-50 border-gray-300' 
                   : `cursor-pointer hover:shadow-md hover:scale-[1.02] ${getPriorityColor(option.priority)}`
@@ -397,7 +397,7 @@ export function OneClickBooking() {
                 <Button
                   size="sm"
                   disabled={option.availableSlots === 0}
-                  className={`${
+                  className={`button-animate ${
                     option.availableSlots === 0
                       ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
                       : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600'

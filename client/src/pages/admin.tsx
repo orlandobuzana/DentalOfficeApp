@@ -190,6 +190,7 @@ export default function Admin() {
               onClick={() => initializeMutation.mutate()}
               disabled={initializeMutation.isPending}
               variant="outline"
+              className="button-animate"
             >
               {initializeMutation.isPending ? "Initializing..." : "Initialize Data"}
             </Button>
@@ -265,7 +266,7 @@ export default function Admin() {
                   <Button 
                     variant="ghost" 
                     size="sm"
-                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 button-animate"
                     data-testid="button-admin-see-all-appointments"
                   >
                     View All
@@ -309,7 +310,7 @@ export default function Admin() {
                             <Button
                               size="sm"
                               variant="outline"
-                              className="px-2 py-1 h-7 text-xs"
+                              className="px-2 py-1 h-7 text-xs button-animate"
                               title="Send Reminder"
                               data-testid={`button-remind-${appointment.id}`}
                             >
@@ -321,6 +322,7 @@ export default function Admin() {
                             <Button
                               size="sm"
                               variant="ghost"
+                              className="button-animate"
                               onClick={() => updateStatusMutation.mutate({ 
                                 id: appointment.id, 
                                 status: 'confirmed' 
@@ -350,7 +352,7 @@ export default function Admin() {
               <div className="grid grid-cols-2 gap-4">
                 <Dialog open={showTeamForm} onOpenChange={setShowTeamForm}>
                   <DialogTrigger asChild>
-                    <button className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-600 hover:bg-blue-50 transition-colors group">
+                    <button className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-600 hover:bg-blue-50 transition-colors group interactive-hover button-animate">
                       <UserPlus className="h-8 w-8 text-gray-400 group-hover:text-blue-600 mb-2 mx-auto" />
                       <p className="text-sm font-medium text-gray-700 group-hover:text-blue-600">Add Team Member</p>
                     </button>
@@ -380,7 +382,7 @@ export default function Admin() {
 
                 <button 
                   onClick={() => setShowCalendarManager(true)}
-                  className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-600 hover:bg-blue-50 transition-colors group"
+                  className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-600 hover:bg-blue-50 transition-colors group interactive-hover button-animate"
                 >
                   <Calendar className="h-8 w-8 text-gray-400 group-hover:text-blue-600 mb-2 mx-auto" />
                   <p className="text-sm font-medium text-gray-700 group-hover:text-blue-600">Manage Calendar</p>

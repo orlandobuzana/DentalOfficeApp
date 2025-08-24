@@ -274,7 +274,7 @@ export default function CalendarManager({ isOpen, onClose }: CalendarManagerProp
           <div className="flex items-center space-x-4">
             <label className="text-sm font-medium text-gray-700">View Date:</label>
             <Select value={selectedDate || today} onValueChange={setSelectedDate}>
-              <SelectTrigger className="w-48">
+              <SelectTrigger className="w-48 form-field-animate focus-ring-animate">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -358,7 +358,7 @@ export default function CalendarManager({ isOpen, onClose }: CalendarManagerProp
                           <FormLabel>Time</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
-                              <SelectTrigger>
+                              <SelectTrigger className="form-field-animate focus-ring-animate">
                                 <SelectValue placeholder="Select time" />
                               </SelectTrigger>
                             </FormControl>
@@ -383,7 +383,7 @@ export default function CalendarManager({ isOpen, onClose }: CalendarManagerProp
                           <FormLabel>Doctor</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
-                              <SelectTrigger>
+                              <SelectTrigger className="form-field-animate focus-ring-animate">
                                 <SelectValue placeholder="Select doctor" />
                               </SelectTrigger>
                             </FormControl>
@@ -409,7 +409,7 @@ export default function CalendarManager({ isOpen, onClose }: CalendarManagerProp
                             <FormLabel>Slot Type</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl>
-                                <SelectTrigger>
+                                <SelectTrigger className="form-field-animate focus-ring-animate">
                                   <SelectValue placeholder="Select slot type" />
                                 </SelectTrigger>
                               </FormControl>
@@ -436,6 +436,7 @@ export default function CalendarManager({ isOpen, onClose }: CalendarManagerProp
                               <Input 
                                 type="number" 
                                 placeholder="60" 
+                                className="form-field-animate focus-ring-animate"
                                 {...field}
                                 onChange={(e) => field.onChange(parseInt(e.target.value) || 60)}
                               />
@@ -457,6 +458,7 @@ export default function CalendarManager({ isOpen, onClose }: CalendarManagerProp
                               <Input 
                                 type="number" 
                                 placeholder="1" 
+                                className="form-field-animate focus-ring-animate"
                                 {...field}
                                 onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
                               />
@@ -473,7 +475,7 @@ export default function CalendarManager({ isOpen, onClose }: CalendarManagerProp
                           <FormItem>
                             <FormLabel>Notes (Optional)</FormLabel>
                             <FormControl>
-                              <Input placeholder="Special requirements" {...field} />
+                              <Input placeholder="Special requirements" className="form-field-animate focus-ring-animate" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -485,13 +487,14 @@ export default function CalendarManager({ isOpen, onClose }: CalendarManagerProp
                       <Button
                         type="submit"
                         disabled={createTimeSlotMutation.isPending}
-                        className="flex-1"
+                        className="flex-1 button-animate"
                       >
                         {createTimeSlotMutation.isPending ? 'Adding...' : 'Add Slot'}
                       </Button>
                       <Button
                         type="button"
                         variant="outline"
+                        className="button-animate"
                         onClick={() => {
                           setShowForm(false);
                           form.reset();

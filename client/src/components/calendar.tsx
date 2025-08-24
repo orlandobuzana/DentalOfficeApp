@@ -262,7 +262,7 @@ export default function Calendar() {
                   Treatment Type
                 </label>
                 <Select value={treatmentType} onValueChange={setTreatmentType}>
-                  <SelectTrigger>
+                  <SelectTrigger className="form-field-animate focus-ring-animate">
                     <SelectValue placeholder="Select treatment" />
                   </SelectTrigger>
                   <SelectContent>
@@ -283,7 +283,7 @@ export default function Calendar() {
                   Doctor
                 </label>
                 <Select value={selectedDoctor} onValueChange={setSelectedDoctor}>
-                  <SelectTrigger>
+                  <SelectTrigger className="form-field-animate focus-ring-animate">
                     <SelectValue placeholder="Select doctor" />
                   </SelectTrigger>
                   <SelectContent>
@@ -311,7 +311,7 @@ export default function Calendar() {
                           variant={selectedTime === time ? "default" : "outline"}
                           size="sm"
                           onClick={() => setSelectedTime(time)}
-                          className={`text-sm transition-all duration-200 ${selectedTime === time ? 'gradient-primary text-white shadow-lg transform scale-105' : 'hover:bg-blue-50 hover:border-blue-300 hover:shadow-md'}`}
+                          className={`text-sm transition-all duration-200 button-animate ${selectedTime === time ? 'gradient-primary text-white shadow-lg transform scale-105' : 'hover:bg-blue-50 hover:border-blue-300 hover:shadow-md'}`}
                         >
                           {time}
                         </Button>
@@ -324,7 +324,7 @@ export default function Calendar() {
                           variant={selectedTime === time ? "default" : "outline"}
                           size="sm"
                           onClick={() => setSelectedTime(time)}
-                          className={`text-sm transition-all duration-200 ${selectedTime === time ? 'gradient-primary text-white shadow-lg transform scale-105' : 'hover:bg-blue-50 hover:border-blue-300 hover:shadow-md'}`}
+                          className={`text-sm transition-all duration-200 button-animate ${selectedTime === time ? 'gradient-primary text-white shadow-lg transform scale-105' : 'hover:bg-blue-50 hover:border-blue-300 hover:shadow-md'}`}
                         >
                           {time}
                         </Button>
@@ -336,7 +336,7 @@ export default function Calendar() {
                 <Button
                   onClick={handleBookAppointment}
                   disabled={!selectedTime || !treatmentType || createAppointmentMutation.isPending}
-                  className="w-full btn-primary-gradient font-semibold py-3 text-lg"
+                  className="w-full btn-primary-gradient font-semibold py-3 text-lg button-animate"
                 >
                   {createAppointmentMutation.isPending ? "Booking..." : "Book Selected Time"}
                 </Button>
