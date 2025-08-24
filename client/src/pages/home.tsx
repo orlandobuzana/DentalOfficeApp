@@ -46,7 +46,7 @@ export default function Home() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
-  const { data: appointments, isLoading: appointmentsLoading } = useQuery<Appointment[]>({
+  const { data: appointments, isLoading: appointmentsLoading, refetch: refetchAppointments, isFetching: appointmentsRefetching } = useQuery<Appointment[]>({
     queryKey: ["/api/appointments"],
     retry: false,
     enabled: !!user,
@@ -202,16 +202,34 @@ END:VCALENDAR`;
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-xl font-semibold text-gray-900">Upcoming Appointments</h3>
-                  <AllAppointmentsPopup>
+                  <div className="flex items-center gap-2">
                     <Button
+                      onClick={() => {
+                        refetchAppointments();
+                        toast({
+                          title: "Refreshing",
+                          description: "Loading latest appointments...",
+                        });
+                      }}
+                      disabled={appointmentsRefetching}
                       variant="ghost"
                       size="sm"
-                      className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                      data-testid="button-see-all-appointments"
+                      className="text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                      data-testid="button-refresh-home-appointments"
                     >
-                      See All
+                      <CalendarCheck className={`w-4 h-4 ${appointmentsRefetching ? 'animate-spin' : ''}`} />
                     </Button>
-                  </AllAppointmentsPopup>
+                    <AllAppointmentsPopup>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                        data-testid="button-see-all-appointments"
+                      >
+                        See All
+                      </Button>
+                    </AllAppointmentsPopup>
+                  </div>
                 </div>
                 {appointmentsLoading ? (
                   <div className="space-y-3">

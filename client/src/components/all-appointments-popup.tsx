@@ -93,6 +93,8 @@ END:VCALENDAR`;
 
   const handleRefresh = () => {
     refetch();
+    // Also invalidate the home page appointments cache to ensure synchronization
+    queryClient.invalidateQueries({ queryKey: ["/api/appointments"] });
     toast({
       title: "Refreshing",
       description: "Loading latest appointments...",
