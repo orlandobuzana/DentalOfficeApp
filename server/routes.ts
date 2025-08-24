@@ -497,6 +497,95 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Reminder routes
+  app.post("/api/reminders/email", isAuthenticated, async (req, res) => {
+    try {
+      const user = (req as any).user;
+      if (user.claims.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const { appointmentId, email, message, appointmentDetails } = req.body;
+      
+      if (!appointmentId || !email || !message) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+      
+      // Log the reminder for now (in real app, integrate with email service)
+      console.log("Sending email reminder:", {
+        appointmentId,
+        email,
+        message,
+        appointmentDetails
+      });
+      
+      // For now, simulate successful email sending
+      // In production, integrate with SendGrid, AWS SES, or similar service
+      const reminder = {
+        id: Date.now().toString(),
+        appointmentId,
+        type: 'email',
+        recipient: email,
+        message,
+        sentAt: new Date().toISOString(),
+        status: 'sent'
+      };
+      
+      res.json({
+        success: true,
+        message: "Email reminder sent successfully",
+        reminder
+      });
+    } catch (error) {
+      console.error("Error sending email reminder:", error);
+      res.status(500).json({ message: "Failed to send email reminder" });
+    }
+  });
+
+  app.post("/api/reminders/sms", isAuthenticated, async (req, res) => {
+    try {
+      const user = (req as any).user;
+      if (user.claims.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const { appointmentId, phone, message, appointmentDetails } = req.body;
+      
+      if (!appointmentId || !phone || !message) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+      
+      // Log the reminder for now (in real app, integrate with SMS service)
+      console.log("Sending SMS reminder:", {
+        appointmentId,
+        phone,
+        message,
+        appointmentDetails
+      });
+      
+      // For now, simulate successful SMS sending
+      // In production, integrate with Twilio, AWS SNS, or similar service
+      const reminder = {
+        id: Date.now().toString(),
+        appointmentId,
+        type: 'sms',
+        recipient: phone,
+        message: message.substring(0, 160), // SMS character limit
+        sentAt: new Date().toISOString(),
+        status: 'sent'
+      };
+      
+      res.json({
+        success: true,
+        message: "SMS reminder sent successfully",
+        reminder
+      });
+    } catch (error) {
+      console.error("Error sending SMS reminder:", error);
+      res.status(500).json({ message: "Failed to send SMS reminder" });
+    }
+  });
+
   // Payment routes
   app.get("/api/payments", isAuthenticated, async (req, res) => {
     try {

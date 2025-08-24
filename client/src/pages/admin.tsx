@@ -12,11 +12,12 @@ import { FormUpload } from "@/components/admin/form-upload";
 import { FormsList } from "@/components/admin/forms-list";
 import { SimpleReportsManagement } from "@/components/simple-reports";
 import { AllAppointmentsPopup } from "@/components/all-appointments-popup";
+import { ReminderPanel } from "@/components/admin/reminder-panel";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { CalendarCheck, Users, DollarSign, Clock, UserPlus, FileText, Calendar, Settings, MessageSquare, Stethoscope, Percent, BarChart3 } from "lucide-react";
+import { CalendarCheck, Users, DollarSign, Clock, UserPlus, FileText, Calendar, Settings, MessageSquare, Stethoscope, Percent, BarChart3, Bell } from "lucide-react";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -304,6 +305,18 @@ export default function Admin() {
                           }`}>
                             {appointment.status}
                           </span>
+                          <ReminderPanel appointment={appointment}>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="px-2 py-1 h-7 text-xs"
+                              title="Send Reminder"
+                              data-testid={`button-remind-${appointment.id}`}
+                            >
+                              <Bell className="w-3 h-3 mr-1" />
+                              Remind
+                            </Button>
+                          </ReminderPanel>
                           {appointment.status === 'pending' && (
                             <Button
                               size="sm"
