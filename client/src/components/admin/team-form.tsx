@@ -96,9 +96,11 @@ export default function TeamForm({ onClose, member }: TeamFormProps) {
         }
       }
       
-      const url = member ? `/api/team/${member.id}` : '/api/team';
-      const method = member ? 'PUT' : 'POST';
-      await apiRequest(method, url, finalData);
+      if (member) {
+        return apiRequest('PUT', `/api/team/${member.id}`, finalData);
+      } else {
+        return apiRequest('POST', '/api/team', finalData);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/team'] });
@@ -109,6 +111,8 @@ export default function TeamForm({ onClose, member }: TeamFormProps) {
       onClose();
     },
     onError: (error: Error) => {
+      console.error('Team member creation/update error:', error);
+      
       if (isUnauthorizedError(error)) {
         toast({
           title: "Unauthorized",
@@ -120,15 +124,48 @@ export default function TeamForm({ onClose, member }: TeamFormProps) {
         }, 500);
         return;
       }
+      
+      const errorMessage = error.message || `Failed to ${member ? 'update' : 'create'} team member`;
       toast({
         title: "Error",
-        description: `Failed to ${member ? 'update' : 'create'} team member`,
+        description: errorMessage,
         variant: "destructive",
       });
     },
   });
 
   const onSubmit = (data: TeamFormData) => {
+    console.log('Form data being submitted:', data);
+    console.log('Form validation errors:', form.formState.errors);
+    
+    // Validate required fields locally first
+    if (!data.name?.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Name is required",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!data.position?.trim()) {
+      toast({
+        title: "Validation Error", 
+        description: "Position is required",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!data.bio?.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Bio is required",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     createMutation.mutate(data);
   };
 

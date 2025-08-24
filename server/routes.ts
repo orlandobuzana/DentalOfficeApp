@@ -199,11 +199,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Admin access required" });
       }
       
+      // Log the request data for debugging
+      console.log('Creating team member with data:', req.body);
+      
+      // Validate required fields
+      if (!req.body.name || !req.body.position || !req.body.bio) {
+        return res.status(400).json({ 
+          message: "Missing required fields: name, position, and bio are required" 
+        });
+      }
+      
       const teamMember = await storage.createTeamMember(req.body);
       res.status(201).json(teamMember);
     } catch (error) {
       console.error("Error creating team member:", error);
-      res.status(500).json({ message: "Failed to create team member" });
+      
+      // More detailed error messages
+      if (error instanceof Error) {
+        if (error.message.includes('duplicate')) {
+          return res.status(400).json({ message: "A team member with this information already exists" });
+        }
+        if (error.message.includes('constraint')) {
+          return res.status(400).json({ message: "Invalid data format or missing required fields" });
+        }
+      }
+      
+      res.status(500).json({ 
+        message: "Failed to create team member",
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
+      });
+    }
+  });
+
+  app.put("/api/team/:id", isAuthenticated, async (req, res) => {
+    try {
+      const user = (req as any).user;
+      if (user.claims.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const { id } = req.params;
+      console.log('Updating team member:', id, 'with data:', req.body);
+      
+      // Validate required fields
+      if (!req.body.name || !req.body.position || !req.body.bio) {
+        return res.status(400).json({ 
+          message: "Missing required fields: name, position, and bio are required" 
+        });
+      }
+      
+      const teamMember = await storage.updateTeamMember(id, req.body);
+      
+      if (!teamMember) {
+        return res.status(404).json({ message: "Team member not found" });
+      }
+      
+      res.json(teamMember);
+    } catch (error) {
+      console.error("Error updating team member:", error);
+      res.status(500).json({ 
+        message: "Failed to update team member",
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
+      });
     }
   });
 
