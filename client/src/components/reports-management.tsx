@@ -64,7 +64,20 @@ export function ReportsManagement() {
   };
 
   const exportToPDF = () => {
-    if (!reportData) return;
+    if (!reportData) {
+      // Create a sample report if no data is available
+      const doc = new jsPDF();
+      doc.setFontSize(16);
+      doc.text('No Report Data Available', 20, 20);
+      doc.setFontSize(12);
+      doc.text('Please generate a report first using the "Generate Report" button above.', 20, 40);
+      doc.text('Once you have data, the PDF export will include:', 20, 60);
+      doc.text('• Summary statistics', 30, 80);
+      doc.text('• Detailed data tables', 30, 95);
+      doc.text('• Professional formatting', 30, 110);
+      doc.save('no-report-data.pdf');
+      return;
+    }
 
     const doc = new jsPDF();
     const currentDate = new Date().toLocaleDateString();
@@ -200,7 +213,29 @@ export function ReportsManagement() {
   };
 
   const exportToExcel = () => {
-    if (!reportData) return;
+    if (!reportData) {
+      // Create a sample Excel file if no data is available
+      const workbook = XLSX.utils.book_new();
+      
+      const noDataSheet = XLSX.utils.aoa_to_sheet([
+        ['No Report Data Available'],
+        [''],
+        ['Instructions:'],
+        ['1. Select a report type (Appointments, Financial, or Patients)'],
+        ['2. Choose your date range'],
+        ['3. Click "Generate Report"'],
+        ['4. Once data is loaded, export will include full data'],
+        [''],
+        ['Report Types Available:'],
+        ['• Appointments: Shows appointment statistics and details'],
+        ['• Financial: Shows payment data and revenue analysis'],
+        ['• Patients: Shows patient registration and demographic data']
+      ]);
+      
+      XLSX.utils.book_append_sheet(workbook, noDataSheet, 'Instructions');
+      XLSX.writeFile(workbook, 'no-report-data.xlsx');
+      return;
+    }
 
     const workbook = XLSX.utils.book_new();
     const currentDate = new Date().toLocaleDateString().replace(/\//g, '-');
@@ -677,6 +712,7 @@ export function ReportsManagement() {
                 <Button
                   onClick={exportToPDF}
                   className="bg-red-600 hover:bg-red-700 text-white"
+                  data-testid="button-export-pdf"
                 >
                   <FileDown className="h-4 w-4 mr-2" />
                   Export PDF Report
@@ -690,6 +726,44 @@ export function ReportsManagement() {
                 >
                   <FileText className="h-4 w-4 mr-2" />
                   Export Excel Report
+                </Button>
+                
+                {/* Test Download Button */}
+                <Button
+                  onClick={() => {
+                    // Create a simple test download to verify download functionality
+                    const testData = {
+                      appointments: {
+                        totalAppointments: 5,
+                        confirmedAppointments: 3,
+                        pendingAppointments: 2,
+                        appointments: [
+                          {
+                            patientId: 'test-patient',
+                            doctorName: 'Dr. Smith',
+                            treatmentType: 'Cleaning',
+                            appointmentDate: '2025-08-24',
+                            appointmentTime: '10:00 AM',
+                            status: 'confirmed'
+                          }
+                        ]
+                      }
+                    };
+                    
+                    // Test PDF Download
+                    const doc = new jsPDF();
+                    doc.setFontSize(16);
+                    doc.text('Test Download - PDF Working!', 20, 20);
+                    doc.text('This confirms PDF download functionality is working.', 20, 40);
+                    doc.save('test-download.pdf');
+                    
+                    console.log('Test PDF download triggered');
+                  }}
+                  variant="outline"
+                  className="border-blue-600 text-blue-600 hover:bg-blue-50"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Test Download
                 </Button>
               </div>
             </CardContent>
