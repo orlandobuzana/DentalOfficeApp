@@ -16,7 +16,7 @@ import { ReminderPanel } from "@/components/admin/reminder-panel";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { CalendarCheck, Users, DollarSign, Clock, UserPlus, FileText, Calendar, Settings, MessageSquare, Stethoscope, Percent, BarChart3, Bell } from "lucide-react";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest } from "@/lib/queryClient";
@@ -406,6 +406,9 @@ export default function Admin() {
                   <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden">
                     <DialogHeader>
                       <DialogTitle>Procedures Management</DialogTitle>
+                      <DialogDescription>
+                        Manage dental procedures, their descriptions, and pricing.
+                      </DialogDescription>
                     </DialogHeader>
                     <div className="overflow-y-auto max-h-[80vh] pr-2">
                       <ProcedureList />
@@ -423,6 +426,9 @@ export default function Admin() {
                   <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden">
                     <DialogHeader>
                       <DialogTitle>Promotions Management</DialogTitle>
+                      <DialogDescription>
+                        Create and manage promotional offers and discounts for your practice.
+                      </DialogDescription>
                     </DialogHeader>
                     <div className="overflow-y-auto max-h-[80vh] pr-2">
                       <PromotionList />
@@ -440,6 +446,9 @@ export default function Admin() {
                   <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden">
                     <DialogHeader>
                       <DialogTitle>Reports & Analytics</DialogTitle>
+                      <DialogDescription>
+                        Generate comprehensive reports and analytics for your dental practice.
+                      </DialogDescription>
                     </DialogHeader>
                     <div className="overflow-y-auto max-h-[80vh] pr-2">
                       <SimpleReportsManagement />

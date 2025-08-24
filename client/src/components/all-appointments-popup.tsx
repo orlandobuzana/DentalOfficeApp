@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -164,6 +164,9 @@ END:VCALENDAR`;
               Refresh
             </Button>
           </div>
+          <DialogDescription>
+            View and manage all appointments with real-time status updates.
+          </DialogDescription>
         </DialogHeader>
         
         <div className="flex-1 overflow-y-auto pr-2">
