@@ -37,14 +37,18 @@ A comprehensive dental practice management system with patient portal, appointme
 - 🤖 **AI Dental Chatbot** - Instant answers to common dental questions
 - 💳 **Payment History Tracking** - View past payments and insurance information
 - 📋 **Downloadable Forms** - Access patient forms and documents
+- 📋 **Appointments Overview** - "See All" popup to view complete appointment history with refresh capability
 
 ### Administrative Tools
 - 👩‍⚕️ **Comprehensive Admin Panel** - Manage all aspects of the dental practice
-- 📊 **Reports & Analytics** - Generate detailed reports with PDF export
+- 📊 **Reports & Analytics** - Generate detailed reports with PDF/Excel export
 - 🦷 **Procedure Management** - Define treatments, pricing, and time requirements
 - 🎉 **Promotions System** - Create and manage special offers
-- 👥 **Team Management** - Add and manage dental team members
+- 👥 **Team Management** - Add and manage dental team members with high-quality images (up to 25MB)
 - 📄 **PDF Forms Management** - Upload and organize patient forms
+- 📅 **Appointments Management** - View all appointments popup with refresh functionality
+- 🔔 **Reminder System** - Send email and SMS appointment reminders to patients
+- 🧹 **Cleanup Tools** - Bulk cleanup of missed appointments with selection interface
 
 ### Technical Features
 - 🔐 **Secure Authentication** - Replit Auth with role-based access control  
@@ -52,25 +56,34 @@ A comprehensive dental practice management system with patient portal, appointme
 - 📱 **Fully Responsive** - Mobile-first design with Tailwind CSS
 - ⚡ **Real-time Updates** - Live appointment and data synchronization
 - 🏥 **Medical-Grade Security** - HIPAA-compliant data handling practices
-- 📊 **PDF Reports** - Professional printable reports with jsPDF integration
+- 📊 **Advanced Reports** - Professional PDF/Excel exports with simplified browser API
 - ✨ **Enhanced Visuals** - Card shadows, hover effects, and interactive elements
+- 📧 **Communication Tools** - Email and SMS reminder system for patients
+- 🖼️ **High-Quality Images** - Advanced image compression (800x800px, 85% quality)
+- 📂 **Large File Support** - Up to 25MB file uploads with 50MB server payload capacity
+- 🔄 **Popup Interfaces** - Professional dialogs for appointments and management tools
 
 ## Technology Stack
 
 ### Frontend
 - **React 18** with TypeScript
 - **Wouter** for routing
-- **TanStack Query** for state management
-- **Shadcn/ui** components with Radix UI
-- **Tailwind CSS** for styling
+- **TanStack Query** for state management and caching
+- **Shadcn/ui** components with Radix UI primitives
+- **Tailwind CSS** for responsive styling
 - **Vite** for development and building
+- **Canvas API** for client-side image compression
+- **Dialog Components** for professional popup interfaces
+- **Tabs Components** for organized admin interfaces
 
 ### Backend
-- **Node.js** with Express.js
+- **Node.js** with Express.js (50MB payload limit)
 - **TypeScript** with ES modules
 - **PostgreSQL** with Neon Database
 - **Drizzle ORM** for database operations
 - **Replit Auth** with OpenID Connect
+- **Communication APIs** for email/SMS reminders
+- **File Processing** with advanced image compression
 
 ## Installation & Setup
 
@@ -125,11 +138,13 @@ The application will be available at `http://localhost:5000`
 
 ### Admin Workflow
 1. **Admin Dashboard** - Overview of appointments and practice statistics
-2. **Appointment Management** - Confirm, reschedule, or cancel appointments
-3. **Reports Generation** - Create detailed PDF reports for analysis
-4. **Practice Management** - Manage procedures, promotions, and team
-5. **Form Management** - Upload and organize patient PDF forms
-6. **Analytics Review** - Monitor practice performance and trends
+2. **Appointment Management** - Confirm, reschedule, or cancel appointments with "See All" popup
+3. **Reminder System** - Send email/SMS reminders to patients for upcoming appointments
+4. **Reports Generation** - Create detailed PDF/Excel reports with simplified download system
+5. **Practice Management** - Manage procedures, promotions, and team with high-quality image uploads
+6. **Form Management** - Upload and organize patient PDF forms
+7. **Cleanup Tools** - Bulk cleanup of missed appointments with selection interface
+8. **Analytics Review** - Monitor practice performance and trends
 
 ## Production Deployment
 
@@ -195,13 +210,15 @@ Update the brand name "SmileCare" in:
 - **Enhanced Typography**: Gradient text effects and improved font weights
 - **Interactive Elements**: Scale animations, pulse effects, and shadow enhancements
 
-### Recent Visual Improvements (January 2025)
-- Implemented comprehensive gradient color system
-- Added glass effect navigation bar with translucent background
-- Enhanced appointment cards with gradient borders and hover animations
-- Improved Quick Actions sidebar with colorful hover states
-- Upgraded calendar component with modern date selection styling
-- Added professional button animations and shadow effects
+### Recent Feature Updates (August 2025)
+- **Enhanced File Upload System**: Increased limits to 25MB with intelligent image compression (800x800px, 85% quality)
+- **Appointment Management Popups**: Professional "See All" dialogs for both patient and admin interfaces
+- **Reminder Communication System**: Email and SMS reminder functionality for appointment notifications
+- **Bulk Cleanup Tools**: Missed appointment cleanup with bulk selection and organization
+- **Download System Optimization**: Simplified browser-based downloads using Blob API for better reliability
+- **Server Optimization**: Increased payload capacity to 50MB for handling large file uploads
+- **Professional UI Dialogs**: Consistent popup interfaces across all management sections
+- **Advanced Image Processing**: Client-side compression with Canvas API for optimal quality-to-size ratio
 
 ## Screenshots Guide
 
@@ -348,7 +365,10 @@ smilecare-dental/
 - `GET/POST/PUT/DELETE /api/procedures` - Manage dental procedures
 - `GET/POST/PUT/DELETE /api/promotions` - Manage promotions
 - `GET/POST/PUT/DELETE /api/forms` - Manage PDF forms
-- `GET/POST /api/team` - Manage team members
+- `GET/POST /api/team` - Manage team members with image uploads
+- `POST /api/reminders/email` - Send email appointment reminders
+- `POST /api/reminders/sms` - Send SMS appointment reminders
+- `POST /api/appointments/cleanup` - Cleanup missed appointments
 
 ### Resources
 - `GET /api/resources` - Get educational resources
@@ -358,13 +378,15 @@ smilecare-dental/
 
 ### Core Tables
 - `users` - User profiles and authentication
-- `appointments` - Patient appointments
+- `appointments` - Patient appointments with status tracking
 - `procedures` - Dental procedures and pricing
 - `promotions` - Special offers and discounts
 - `forms` - Downloadable PDF forms
-- `team_members` - Dental team information
+- `team_members` - Dental team information with high-quality images
 - `resources` - Educational materials
 - `chatbot_responses` - AI chatbot knowledge base
+- `sessions` - Secure session storage for authentication
+- `payments` - Payment history and insurance tracking
 
 ## Contributing
 

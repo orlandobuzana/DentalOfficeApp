@@ -30,7 +30,7 @@ Preferred communication style: Simple, everyday language.
 - **ORM**: Drizzle ORM with type-safe queries
 - **Schema Management**: Drizzle Kit for migrations and schema updates
 - **Connection**: Neon serverless connection pooling
-- **Core Tables**: Users, appointments, team members, resources, chatbot responses, time slots, procedures, promotions, forms
+- **Core Tables**: Users, appointments with status tracking, team members with images, resources, chatbot responses, time slots, procedures, promotions, forms, sessions, payments
 
 ## Key Components
 
@@ -42,18 +42,21 @@ Preferred communication style: Simple, everyday language.
 
 ### Patient Portal Features
 - **Appointment Booking**: Interactive calendar with real-time availability
-- **Appointment Management**: View, track, and manage appointments
+- **Appointment Management**: View, track, and manage appointments with "See All" popup and refresh capability
 - **Profile Management**: User profile with Replit integration
 - **Resource Access**: Educational materials and dental care information
+- **Calendar Integration**: Direct device calendar integration for appointment reminders
 
 ### Admin Panel
-- **Team Management**: CRUD operations for dental team members
+- **Team Management**: CRUD operations for dental team members with high-quality image uploads (up to 25MB)
 - **Resource Management**: Upload and manage educational content
-- **Appointment Oversight**: View and manage all patient appointments
+- **Appointment Oversight**: View and manage all patient appointments with "See All" popup and refresh functionality
+- **Reminder System**: Send email and SMS appointment reminders to patients through professional interface
 - **Content Administration**: Manage chatbot responses and FAQs
 - **Procedures Management**: Define and manage dental procedures with pricing
 - **Promotions Management**: Create and manage special offers and discounts
 - **PDF Forms Management**: Upload and organize downloadable patient forms
+- **Cleanup Tools**: Bulk management of missed appointments with selection interface
 
 ### AI Chatbot
 - **Functionality**: Keyword-based response system for common dental questions
@@ -137,6 +140,31 @@ Preferred communication style: Simple, everyday language.
 The application follows modern web development best practices with a focus on type safety, developer experience, and user security. The modular architecture allows for easy maintenance and feature expansion while maintaining performance and reliability.
 
 ## Recent Updates (August 2025)
+
+### Advanced File Upload & Communication System
+- **Enhanced File Upload Capabilities**: Increased file size limits to 25MB with intelligent image compression
+  - **Smart Compression**: Automatic resizing to 800x800px with 85% JPEG quality
+  - **Server Optimization**: Increased payload capacity to 50MB for robust file handling
+  - **Error Resolution**: Fixed "entity too large" errors with comprehensive payload management
+
+### Professional Appointments Management
+- **"See All" Appointments Popup**: Professional dialog interface for both patient and admin views
+  - **Refresh Functionality**: Real-time appointment updates with loading states
+  - **Comprehensive View**: Complete appointment history with status indicators
+  - **Calendar Integration**: Direct calendar reminders from popup interface
+
+### Communication & Reminder System
+- **Email & SMS Reminders**: Admin can send appointment reminders to patients
+  - **Dual Channel Support**: Professional email and SMS reminder interfaces
+  - **Smart Messaging**: Auto-generated reminders with appointment details
+  - **Custom Messages**: Option for personalized reminder content
+  - **Backend Integration**: Secure API endpoints ready for email/SMS service integration
+
+### Administrative Tools Enhancement
+- **Bulk Appointment Cleanup**: Missed appointment management with bulk selection
+- **Advanced Image Processing**: Client-side Canvas API compression for optimal quality
+- **Professional Dialog Interfaces**: Consistent popup design across all admin functions
+- **Download System Optimization**: Simplified browser-based downloads using Blob API
 
 ### UI/UX Cleanup and Professional Enhancement
 - **Removed Redundant Elements**: Eliminated duplicate "Become Admin" button from home page
