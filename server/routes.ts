@@ -19,6 +19,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post('/api/auth/promote-admin', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Update user role to admin in storage
+      const updatedUser = await storage.updateUserRole(userId, 'admin');
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      res.json({
+        success: true,
+        message: "User promoted to admin successfully",
+        user: updatedUser
+      });
+    } catch (error) {
+      console.error("Error promoting user to admin:", error);
+      res.status(500).json({ message: "Failed to promote user to admin" });
+    }
+  });
+
   // Appointment cleanup endpoint
   app.post("/api/appointments/cleanup", isAuthenticated, async (req, res) => {
     try {
