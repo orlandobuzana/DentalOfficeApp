@@ -217,7 +217,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/team", isAuthenticated, async (req, res) => {
     try {
       const user = (req as any).user;
-      if (user.claims.role !== 'admin') {
+      const userId = user.claims.sub;
+      
+      // Check user role from database (not from claims which might be stale)
+      const dbUser = await storage.getUser(userId);
+      if (!dbUser || dbUser.role !== 'admin') {
+        console.log('Access denied - user role:', dbUser?.role || 'no user found');
         return res.status(403).json({ message: "Admin access required" });
       }
       
@@ -256,7 +261,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/team/:id", isAuthenticated, async (req, res) => {
     try {
       const user = (req as any).user;
-      if (user.claims.role !== 'admin') {
+      const userId = user.claims.sub;
+      
+      // Check user role from database (not from claims which might be stale)
+      const dbUser = await storage.getUser(userId);
+      if (!dbUser || dbUser.role !== 'admin') {
+        console.log('Access denied - user role:', dbUser?.role || 'no user found');
         return res.status(403).json({ message: "Admin access required" });
       }
       
