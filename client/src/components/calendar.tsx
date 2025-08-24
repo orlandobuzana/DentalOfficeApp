@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -163,6 +163,18 @@ export default function Calendar() {
     .filter(slot => !selectedDoctor || slot.doctorName === selectedDoctor)
     .map(slot => slot.time);
 
+  // Debug logging for troubleshooting time slots
+  useEffect(() => {
+    if (selectedDate) {
+      console.log('Time Slots Debug Info:');
+      console.log('- Selected Date:', selectedDate);
+      console.log('- Raw Time Slots from API:', timeSlots);
+      console.log('- Available Slots (filtered):', availableSlots);
+      console.log('- Available Times:', availableTimes);
+      console.log('- Selected Doctor:', selectedDoctor);
+    }
+  }, [selectedDate, timeSlots, availableSlots, availableTimes, selectedDoctor]);
+
   // Always use actual doctors from available slots, or show default options
   const doctorsList = doctors.length > 0 ? doctors : ["Dr. Sarah Johnson", "Dr. Mike Chen", "Dr. James Wilson"];
 
@@ -316,19 +328,19 @@ export default function Calendar() {
                           {time}
                         </Button>
                       ))
+                    ) : timeSlots && timeSlots.length === 0 ? (
+                      <div className="col-span-full text-center py-4">
+                        <p className="text-gray-500 text-sm">
+                          No time slots available for {new Date(selectedDate).toLocaleDateString()}
+                        </p>
+                        <p className="text-gray-400 text-xs mt-1">
+                          Please select a different date or contact admin to create time slots.
+                        </p>
+                      </div>
                     ) : (
-                      // Show default time slots when no API data is available
-                      ['9:00 AM', '10:00 AM', '11:00 AM', '2:00 PM', '3:00 PM', '4:00 PM'].map(time => (
-                        <Button
-                          key={time}
-                          variant={selectedTime === time ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => setSelectedTime(time)}
-                          className={`text-sm transition-all duration-200 button-animate ${selectedTime === time ? 'gradient-primary text-white shadow-lg transform scale-105' : 'hover:bg-blue-50 hover:border-blue-300 hover:shadow-md'}`}
-                        >
-                          {time}
-                        </Button>
-                      ))
+                      <div className="col-span-full text-center py-4">
+                        <p className="text-gray-500 text-sm">Loading available times...</p>
+                      </div>
                     )}
                   </div>
                 </div>

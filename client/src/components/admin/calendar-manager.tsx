@@ -9,6 +9,7 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -267,6 +268,9 @@ export default function CalendarManager({ isOpen, onClose }: CalendarManagerProp
             <Calendar className="w-5 h-5 mr-2" />
             Manage Calendar Availability
           </DialogTitle>
+          <DialogDescription>
+            Create and manage time slots for different dates and doctors.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
