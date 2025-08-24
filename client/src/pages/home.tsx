@@ -161,7 +161,18 @@ END:VCALENDAR`;
     const validStatuses = ['confirmed', 'pending', 'scheduled'];
     const isValidStatus = validStatuses.includes(apt.status.toLowerCase());
     
-    return isValidStatus;
+    // Only include future appointments, not past ones
+    const [time, period] = apt.appointmentTime.split(' ');
+    const [hours, minutes] = time.split(':').map((num: string) => parseInt(num));
+    const hour24 = period === 'PM' && hours !== 12 ? hours + 12 : (period === 'AM' && hours === 12 ? 0 : hours);
+    
+    const appointmentDateTime = new Date(apt.appointmentDate + 'T00:00:00');
+    appointmentDateTime.setHours(hour24, minutes, 0, 0);
+    
+    const now = new Date();
+    const isFuture = appointmentDateTime > now;
+    
+    return isValidStatus && isFuture;
   }).sort((a, b) => {
     // Sort by date and time, earliest first
     const parseDateTime = (appointment: any) => {
@@ -174,7 +185,7 @@ END:VCALENDAR`;
     };
     
     return parseDateTime(a).getTime() - parseDateTime(b).getTime();
-  }).slice(0, 5) || []; // Show up to 5 appointments (including missed ones)
+  }).slice(0, 5) || []; // Show up to 5 upcoming appointments
 
   // Dashboard content
   const dashboardContent = () => (
