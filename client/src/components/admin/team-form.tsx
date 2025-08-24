@@ -48,10 +48,10 @@ export default function TeamForm({ onClose, member }: TeamFormProps) {
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      if (file.size > 1 * 1024 * 1024) { // 1MB limit to prevent entity too large error
         toast({
           title: "Error",
-          description: "File size must be less than 5MB",
+          description: "File size must be less than 1MB to avoid server limits",
           variant: "destructive",
         });
         return;
@@ -72,13 +72,39 @@ export default function TeamForm({ onClose, member }: TeamFormProps) {
     }
   };
 
-  // Convert file to base64 for simple storage
+  // Compress and convert file to base64 for simple storage
   const fileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = error => reject(error);
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = () => {
+        // Calculate new dimensions (max 400x400 to keep size reasonable)
+        const maxSize = 400;
+        let { width, height } = img;
+        
+        if (width > maxSize || height > maxSize) {
+          if (width > height) {
+            height = (height * maxSize) / width;
+            width = maxSize;
+          } else {
+            width = (width * maxSize) / height;
+            height = maxSize;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        // Draw and compress
+        ctx?.drawImage(img, 0, 0, width, height);
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7); // 70% quality
+        resolve(compressedDataUrl);
+      };
+      
+      img.onerror = () => reject(new Error('Failed to load image'));
+      img.src = URL.createObjectURL(file);
     });
   };
 
@@ -115,7 +141,7 @@ export default function TeamForm({ onClose, member }: TeamFormProps) {
       
       if (isUnauthorizedError(error)) {
         toast({
-          title: "Unauthorized",
+          title: "Unauthorized", 
           description: "You are logged out. Logging in again...",
           variant: "destructive",
         });
@@ -125,7 +151,17 @@ export default function TeamForm({ onClose, member }: TeamFormProps) {
         return;
       }
       
-      const errorMessage = error.message || `Failed to ${member ? 'update' : 'create'} team member`;
+      // Handle specific error messages
+      let errorMessage = error.message || `Failed to ${member ? 'update' : 'create'} team member`;
+      
+      if (errorMessage.includes('413') || errorMessage.includes('entity too large')) {
+        errorMessage = "Image file is too large. Please use a smaller image (under 1MB).";
+      } else if (errorMessage.includes('400')) {
+        errorMessage = "Invalid data provided. Please check all required fields.";
+      } else if (errorMessage.includes('500')) {
+        errorMessage = "Server error. Please try again or contact support.";
+      }
+      
       toast({
         title: "Error",
         description: errorMessage,
