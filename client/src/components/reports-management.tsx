@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { BarChart3, FileText, Users, CreditCard, Download, Calendar, TrendingUp, FileDown } from "lucide-react";
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 
 interface ReportData {
   appointments?: {
@@ -71,7 +72,7 @@ export function ReportsManagement() {
 
     // Header
     doc.setFontSize(20);
-    doc.text('SmileCare Dental Report', 20, yPosition);
+    doc.text('Dental Practice Report', 20, yPosition);
     yPosition += 10;
     
     doc.setFontSize(12);
@@ -194,28 +195,115 @@ export function ReportsManagement() {
     }
 
     // Save PDF
-    const filename = `smilecare-${reportType}-report-${currentDate.replace(/\//g, '-')}.pdf`;
+    const filename = `dental-${reportType}-report-${currentDate.replace(/\//g, '-')}.pdf`;
     doc.save(filename);
   };
 
-  const exportToCSV = (data: any[], filename: string) => {
-    if (!data || data.length === 0) return;
+  const exportToExcel = () => {
+    if (!reportData) return;
 
-    const headers = Object.keys(data[0]);
-    const csvContent = [
-      headers.join(','),
-      ...data.map(row => headers.map(header => 
-        JSON.stringify(row[header] || '')
-      ).join(','))
-    ].join('\n');
+    const workbook = XLSX.utils.book_new();
+    const currentDate = new Date().toLocaleDateString().replace(/\//g, '-');
 
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${filename}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    // Create data for Excel export based on report type
+    if (reportType === 'appointments' && reportData.appointments) {
+      const { appointments, totalAppointments, confirmedAppointments, pendingAppointments } = reportData.appointments;
+
+      // Summary sheet
+      const summaryData = [
+        ['Appointments Report Summary'],
+        ['Generated:', new Date().toLocaleDateString()],
+        ['Date Range:', `${startDate || 'All time'} - ${endDate || 'Present'}`],
+        [''],
+        ['Total Appointments:', totalAppointments || 0],
+        ['Confirmed:', confirmedAppointments || 0],
+        ['Pending:', pendingAppointments || 0],
+      ];
+
+      const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+      XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary');
+
+      // Appointments detail sheet
+      if (appointments && appointments.length > 0) {
+        const appointmentData = appointments.map(apt => ({
+          'Patient ID': apt.patientId || 'N/A',
+          'Doctor': apt.doctorName || 'N/A',
+          'Treatment': apt.treatmentType || 'N/A',
+          'Date': apt.appointmentDate || 'N/A',
+          'Time': apt.appointmentTime || 'N/A',
+          'Status': apt.status || 'N/A'
+        }));
+
+        const appointmentSheet = XLSX.utils.json_to_sheet(appointmentData);
+        XLSX.utils.book_append_sheet(workbook, appointmentSheet, 'Appointments');
+      }
+    }
+
+    if (reportType === 'financial' && reportData.payments) {
+      const { payments, totalRevenue, totalPatientPaid, totalInsuranceCovered } = reportData.payments;
+
+      // Financial summary
+      const summaryData = [
+        ['Financial Report Summary'],
+        ['Generated:', new Date().toLocaleDateString()],
+        ['Date Range:', `${startDate || 'All time'} - ${endDate || 'Present'}`],
+        [''],
+        ['Total Revenue:', `$${totalRevenue?.toFixed(2) || '0.00'}`],
+        ['Patient Payments:', `$${totalPatientPaid?.toFixed(2) || '0.00'}`],
+        ['Insurance Covered:', `$${totalInsuranceCovered?.toFixed(2) || '0.00'}`],
+      ];
+
+      const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+      XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary');
+
+      // Payments detail sheet
+      if (payments && payments.length > 0) {
+        const paymentData = payments.map(payment => ({
+          'Patient': payment.patientName || 'N/A',
+          'Procedure': payment.procedure || 'N/A',
+          'Amount': payment.amount?.toFixed(2) || '0.00',
+          'Payment Method': payment.paymentMethod || 'N/A',
+          'Date': payment.date || 'N/A',
+          'Status': payment.status || 'N/A'
+        }));
+
+        const paymentSheet = XLSX.utils.json_to_sheet(paymentData);
+        XLSX.utils.book_append_sheet(workbook, paymentSheet, 'Payments');
+      }
+    }
+
+    if (reportType === 'patients' && reportData.patients) {
+      const { patients, totalPatients, newPatientsThisMonth } = reportData.patients;
+
+      // Patients summary
+      const summaryData = [
+        ['Patients Report Summary'],
+        ['Generated:', new Date().toLocaleDateString()],
+        [''],
+        ['Total Patients:', totalPatients || 0],
+        ['New This Month:', newPatientsThisMonth || 0],
+      ];
+
+      const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+      XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary');
+
+      // Patients detail sheet
+      if (patients && patients.length > 0) {
+        const patientData = patients.map(patient => ({
+          'First Name': patient.firstName || 'N/A',
+          'Last Name': patient.lastName || 'N/A',
+          'Email': patient.email || 'N/A',
+          'Registration Date': patient.createdAt ? new Date(patient.createdAt).toLocaleDateString() : 'N/A'
+        }));
+
+        const patientSheet = XLSX.utils.json_to_sheet(patientData);
+        XLSX.utils.book_append_sheet(workbook, patientSheet, 'Patients');
+      }
+    }
+
+    // Save Excel file
+    const filename = `dental-${reportType}-report-${currentDate}.xlsx`;
+    XLSX.writeFile(workbook, filename);
   };
 
   const formatCurrency = (cents: number) => {
@@ -578,34 +666,15 @@ export function ReportsManagement() {
                   Export PDF Report
                 </Button>
 
-                {/* CSV Export Buttons - Specific data exports */}
-                {reportType === 'appointments' && reportData.appointments?.appointments && (
-                  <Button
-                    variant="outline"
-                    onClick={() => exportToCSV(reportData.appointments!.appointments, `appointments-report-${startDate}-to-${endDate}`)}
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    Export Appointments CSV
-                  </Button>
-                )}
-                {reportType === 'payments' && reportData.payments?.payments && (
-                  <Button
-                    variant="outline"
-                    onClick={() => exportToCSV(reportData.payments!.payments, `financial-report-${startDate}-to-${endDate}`)}
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    Export Payments CSV
-                  </Button>
-                )}
-                {reportType === 'patients' && reportData.patients?.patients && (
-                  <Button
-                    variant="outline"
-                    onClick={() => exportToCSV(reportData.patients!.patients, `patient-report-${startDate}-to-${endDate}`)}
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    Export Patients CSV
-                  </Button>
-                )}
+                {/* Excel Export Button */}
+                <Button
+                  onClick={exportToExcel}
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                  data-testid="button-export-excel"
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  Export Excel Report
+                </Button>
               </div>
             </CardContent>
           </Card>
