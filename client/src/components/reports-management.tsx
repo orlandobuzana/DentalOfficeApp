@@ -342,6 +342,22 @@ export function ReportsManagement() {
         </div>
       </div>
 
+      {/* Download Information */}
+      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+        <div className="flex items-start gap-3">
+          <Download className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+          <div>
+            <h3 className="font-medium text-blue-900 dark:text-blue-100 mb-1">
+              Report Downloads
+            </h3>
+            <p className="text-sm text-blue-700 dark:text-blue-300">
+              Generated PDF and Excel reports will download to your browser's default download folder. 
+              Files are named with report type and date (e.g., "dental-appointments-report-8-24-2025.pdf").
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Report Configuration */}
       <Card>
         <CardHeader>

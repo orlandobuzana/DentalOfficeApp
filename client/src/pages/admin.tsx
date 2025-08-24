@@ -371,21 +371,56 @@ export default function Admin() {
                   <p className="text-sm font-medium text-gray-700 group-hover:text-blue-600">Manage Chatbot</p>
                 </button>
 
-                <button 
-                  onClick={() => setShowProcedures(true)}
-                  className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-600 hover:bg-blue-50 transition-colors group"
-                >
-                  <Stethoscope className="h-8 w-8 text-gray-400 group-hover:text-blue-600 mb-2 mx-auto" />
-                  <p className="text-sm font-medium text-gray-700 group-hover:text-blue-600">Manage Procedures</p>
-                </button>
+                <Dialog open={showProcedures} onOpenChange={setShowProcedures}>
+                  <DialogTrigger asChild>
+                    <button className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-600 hover:bg-blue-50 transition-colors group">
+                      <Stethoscope className="h-8 w-8 text-gray-400 group-hover:text-blue-600 mb-2 mx-auto" />
+                      <p className="text-sm font-medium text-gray-700 group-hover:text-blue-600">Manage Procedures</p>
+                    </button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden">
+                    <DialogHeader>
+                      <DialogTitle>Procedures Management</DialogTitle>
+                    </DialogHeader>
+                    <div className="overflow-y-auto max-h-[80vh] pr-2">
+                      <ProcedureList />
+                    </div>
+                  </DialogContent>
+                </Dialog>
 
-                <button 
-                  onClick={() => setShowPromotions(true)}
-                  className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-600 hover:bg-blue-50 transition-colors group"
-                >
-                  <Percent className="h-8 w-8 text-gray-400 group-hover:text-blue-600 mb-2 mx-auto" />
-                  <p className="text-sm font-medium text-gray-700 group-hover:text-blue-600">Manage Promotions</p>
-                </button>
+                <Dialog open={showPromotions} onOpenChange={setShowPromotions}>
+                  <DialogTrigger asChild>
+                    <button className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-600 hover:bg-blue-50 transition-colors group">
+                      <Percent className="h-8 w-8 text-gray-400 group-hover:text-blue-600 mb-2 mx-auto" />
+                      <p className="text-sm font-medium text-gray-700 group-hover:text-blue-600">Manage Promotions</p>
+                    </button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden">
+                    <DialogHeader>
+                      <DialogTitle>Promotions Management</DialogTitle>
+                    </DialogHeader>
+                    <div className="overflow-y-auto max-h-[80vh] pr-2">
+                      <PromotionList />
+                    </div>
+                  </DialogContent>
+                </Dialog>
+
+                <Dialog open={showReports} onOpenChange={setShowReports}>
+                  <DialogTrigger asChild>
+                    <button className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-600 hover:bg-blue-50 transition-colors group">
+                      <BarChart3 className="h-8 w-8 text-gray-400 group-hover:text-blue-600 mb-2 mx-auto" />
+                      <p className="text-sm font-medium text-gray-700 group-hover:text-blue-600">Reports & Analytics</p>
+                    </button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden">
+                    <DialogHeader>
+                      <DialogTitle>Reports & Analytics</DialogTitle>
+                    </DialogHeader>
+                    <div className="overflow-y-auto max-h-[80vh] pr-2">
+                      <ReportsManagement />
+                    </div>
+                  </DialogContent>
+                </Dialog>
 
                 <button 
                   onClick={() => setShowForms(true)}
@@ -394,50 +429,12 @@ export default function Admin() {
                   <FileText className="h-8 w-8 text-gray-400 group-hover:text-blue-600 mb-2 mx-auto" />
                   <p className="text-sm font-medium text-gray-700 group-hover:text-blue-600">Manage PDF Forms</p>
                 </button>
-
-                <button 
-                  onClick={() => setShowReports(true)}
-                  className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-600 hover:bg-blue-50 transition-colors group"
-                >
-                  <BarChart3 className="h-8 w-8 text-gray-400 group-hover:text-blue-600 mb-2 mx-auto" />
-                  <p className="text-sm font-medium text-gray-700 group-hover:text-blue-600">Reports & Analytics</p>
-                </button>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Procedures and Promotions Management Sections */}
-        {showProcedures && (
-          <div className="mt-8">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-2xl font-bold text-gray-900">Procedures Management</h3>
-              <Button
-                variant="outline"
-                onClick={() => setShowProcedures(false)}
-              >
-                Close
-              </Button>
-            </div>
-            <ProcedureList />
-          </div>
-        )}
-
-        {showPromotions && (
-          <div className="mt-8">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-2xl font-bold text-gray-900">Promotions Management</h3>
-              <Button
-                variant="outline"
-                onClick={() => setShowPromotions(false)}
-              >
-                Close
-              </Button>
-            </div>
-            <PromotionList />
-          </div>
-        )}
-
+        {/* PDF Forms Management Section - Keeping as fullscreen for now */}
         {showForms && (
           <div className="mt-8">
             <div className="flex justify-between items-center mb-4">
@@ -450,21 +447,6 @@ export default function Admin() {
               </Button>
             </div>
             <FormsList />
-          </div>
-        )}
-
-        {showReports && (
-          <div className="mt-8">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-2xl font-bold text-gray-900">Reports & Analytics</h3>
-              <Button
-                variant="outline"
-                onClick={() => setShowReports(false)}
-              >
-                Close
-              </Button>
-            </div>
-            <ReportsManagement />
           </div>
         )}
 
