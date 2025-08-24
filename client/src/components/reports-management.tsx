@@ -64,18 +64,31 @@ export function ReportsManagement() {
   };
 
   const exportToPDF = () => {
-    if (!reportData) {
-      // Create a sample report if no data is available
-      const doc = new jsPDF();
-      doc.setFontSize(16);
-      doc.text('No Report Data Available', 20, 20);
-      doc.setFontSize(12);
-      doc.text('Please generate a report first using the "Generate Report" button above.', 20, 40);
-      doc.text('Once you have data, the PDF export will include:', 20, 60);
-      doc.text('• Summary statistics', 30, 80);
-      doc.text('• Detailed data tables', 30, 95);
-      doc.text('• Professional formatting', 30, 110);
-      doc.save('no-report-data.pdf');
+    try {
+      console.log('PDF Export clicked, reportData:', !!reportData);
+      
+      if (!reportData) {
+        console.log('No report data, creating sample PDF...');
+        const doc = new jsPDF();
+        doc.setFontSize(16);
+        doc.text('No Report Data Available', 20, 20);
+        doc.setFontSize(12);
+        doc.text('Please generate a report first using the "Generate Report" button above.', 20, 40);
+        doc.text('Once you have data, the PDF export will include:', 20, 60);
+        doc.text('• Summary statistics', 30, 80);
+        doc.text('• Detailed data tables', 30, 95);
+        doc.text('• Professional formatting', 30, 110);
+        
+        const filename = `no-report-data-${new Date().getTime()}.pdf`;
+        console.log('Saving PDF with filename:', filename);
+        doc.save(filename);
+        return;
+      }
+      
+      console.log('Creating PDF with report data...');
+    } catch (error) {
+      console.error('PDF export error:', error);
+      alert('PDF export failed. Check browser console for details.');
       return;
     }
 
@@ -385,9 +398,13 @@ export function ReportsManagement() {
             <h3 className="font-medium text-blue-900 dark:text-blue-100 mb-1">
               Report Downloads
             </h3>
-            <p className="text-sm text-blue-700 dark:text-blue-300">
+            <p className="text-sm text-blue-700 dark:text-blue-300 mb-2">
               Generated PDF and Excel reports will download to your browser's default download folder. 
               Files are named with report type and date (e.g., "dental-appointments-report-8-24-2025.pdf").
+            </p>
+            <p className="text-xs text-blue-600 dark:text-blue-400">
+              <strong>Troubleshooting:</strong> If downloads don't start, check your browser's pop-up blocker and ensure downloads are allowed. 
+              Use the "Test Downloads" button below to verify functionality.
             </p>
           </div>
         </div>
@@ -728,42 +745,51 @@ export function ReportsManagement() {
                   Export Excel Report
                 </Button>
                 
-                {/* Test Download Button */}
+                {/* Simple Text Download Test */}
                 <Button
                   onClick={() => {
-                    // Create a simple test download to verify download functionality
-                    const testData = {
-                      appointments: {
-                        totalAppointments: 5,
-                        confirmedAppointments: 3,
-                        pendingAppointments: 2,
-                        appointments: [
-                          {
-                            patientId: 'test-patient',
-                            doctorName: 'Dr. Smith',
-                            treatmentType: 'Cleaning',
-                            appointmentDate: '2025-08-24',
-                            appointmentTime: '10:00 AM',
-                            status: 'confirmed'
-                          }
-                        ]
-                      }
-                    };
-                    
-                    // Test PDF Download
-                    const doc = new jsPDF();
-                    doc.setFontSize(16);
-                    doc.text('Test Download - PDF Working!', 20, 20);
-                    doc.text('This confirms PDF download functionality is working.', 20, 40);
-                    doc.save('test-download.pdf');
-                    
-                    console.log('Test PDF download triggered');
+                    try {
+                      console.log('Testing basic download functionality...');
+                      
+                      // Create simple text file download
+                      const content = 'This is a test download from the dental management system.\n\nIf you can see this file, downloads are working properly!';
+                      const blob = new Blob([content], { type: 'text/plain' });
+                      const url = URL.createObjectURL(blob);
+                      
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = 'download-test.txt';
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      URL.revokeObjectURL(url);
+                      
+                      console.log('Text download completed');
+                      
+                      // Also try PDF
+                      setTimeout(() => {
+                        try {
+                          console.log('Testing PDF download...');
+                          const pdfDoc = new jsPDF();
+                          pdfDoc.setFontSize(16);
+                          pdfDoc.text('PDF Download Test Successful!', 20, 20);
+                          pdfDoc.text('Date: ' + new Date().toLocaleString(), 20, 40);
+                          pdfDoc.save('pdf-test.pdf');
+                          console.log('PDF download completed');
+                        } catch (pdfError) {
+                          console.error('PDF download failed:', pdfError);
+                        }
+                      }, 500);
+                      
+                    } catch (error) {
+                      console.error('Download test failed:', error);
+                    }
                   }}
                   variant="outline"
                   className="border-blue-600 text-blue-600 hover:bg-blue-50"
                 >
                   <Download className="h-4 w-4 mr-2" />
-                  Test Download
+                  Test Downloads
                 </Button>
               </div>
             </CardContent>
