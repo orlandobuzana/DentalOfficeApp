@@ -48,10 +48,10 @@ export default function TeamForm({ onClose, member }: TeamFormProps) {
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (file.size > 1 * 1024 * 1024) { // 1MB limit to prevent entity too large error
+      if (file.size > 25 * 1024 * 1024) { // 25MB limit - much more reasonable
         toast({
           title: "Error",
-          description: "File size must be less than 1MB to avoid server limits",
+          description: "File size must be less than 25MB",
           variant: "destructive",
         });
         return;
@@ -80,8 +80,8 @@ export default function TeamForm({ onClose, member }: TeamFormProps) {
       const img = new Image();
       
       img.onload = () => {
-        // Calculate new dimensions (max 400x400 to keep size reasonable)
-        const maxSize = 400;
+        // Calculate new dimensions (max 800x800 for better quality)
+        const maxSize = 800;
         let { width, height } = img;
         
         if (width > maxSize || height > maxSize) {
@@ -99,7 +99,7 @@ export default function TeamForm({ onClose, member }: TeamFormProps) {
         
         // Draw and compress
         ctx?.drawImage(img, 0, 0, width, height);
-        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7); // 70% quality
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85); // 85% quality for better images
         resolve(compressedDataUrl);
       };
       
@@ -155,7 +155,7 @@ export default function TeamForm({ onClose, member }: TeamFormProps) {
       let errorMessage = error.message || `Failed to ${member ? 'update' : 'create'} team member`;
       
       if (errorMessage.includes('413') || errorMessage.includes('entity too large')) {
-        errorMessage = "Image file is too large. Please use a smaller image (under 1MB).";
+        errorMessage = "Image file is too large. Please use a smaller image (under 25MB).";
       } else if (errorMessage.includes('400')) {
         errorMessage = "Invalid data provided. Please check all required fields.";
       } else if (errorMessage.includes('500')) {
