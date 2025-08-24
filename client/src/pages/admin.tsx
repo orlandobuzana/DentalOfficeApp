@@ -11,6 +11,7 @@ import { PromotionList } from "@/components/admin/promotion-list";
 import { FormUpload } from "@/components/admin/form-upload";
 import { FormsList } from "@/components/admin/forms-list";
 import { SimpleReportsManagement } from "@/components/simple-reports";
+import { AllAppointmentsPopup } from "@/components/all-appointments-popup";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -259,7 +260,16 @@ export default function Admin() {
             <CardHeader>
               <div className="flex justify-between items-center">
                 <CardTitle>Recent Appointments</CardTitle>
-                <Button variant="ghost" size="sm">View All</Button>
+                <AllAppointmentsPopup>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                    data-testid="button-admin-see-all-appointments"
+                  >
+                    View All
+                  </Button>
+                </AllAppointmentsPopup>
               </div>
             </CardHeader>
             <CardContent>
