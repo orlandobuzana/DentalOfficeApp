@@ -422,33 +422,28 @@ export default function Admin() {
                   </DialogContent>
                 </Dialog>
 
-                <button 
-                  onClick={() => setShowForms(true)}
-                  className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-600 hover:bg-blue-50 transition-colors group"
-                >
-                  <FileText className="h-8 w-8 text-gray-400 group-hover:text-blue-600 mb-2 mx-auto" />
-                  <p className="text-sm font-medium text-gray-700 group-hover:text-blue-600">Manage PDF Forms</p>
-                </button>
+                <Dialog open={showForms} onOpenChange={setShowForms}>
+                  <DialogTrigger asChild>
+                    <button className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-600 hover:bg-blue-50 transition-colors group">
+                      <FileText className="h-8 w-8 text-gray-400 group-hover:text-blue-600 mb-2 mx-auto" />
+                      <p className="text-sm font-medium text-gray-700 group-hover:text-blue-600">Manage PDF Forms</p>
+                    </button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden">
+                    <DialogHeader>
+                      <DialogTitle>PDF Forms Management</DialogTitle>
+                    </DialogHeader>
+                    <div className="overflow-y-auto max-h-[80vh] pr-2">
+                      <FormsList />
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* PDF Forms Management Section - Keeping as fullscreen for now */}
-        {showForms && (
-          <div className="mt-8">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-2xl font-bold text-gray-900">PDF Forms Management</h3>
-              <Button
-                variant="outline"
-                onClick={() => setShowForms(false)}
-              >
-                Close
-              </Button>
-            </div>
-            <FormsList />
-          </div>
-        )}
+
 
         {/* Modal Components */}
         <ChatbotManager 
