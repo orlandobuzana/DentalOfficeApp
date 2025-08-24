@@ -213,6 +213,8 @@ export const insertChatbotResponseSchema = createInsertSchema(chatbotResponses).
 export const insertTimeSlotSchema = createInsertSchema(timeSlots).omit({
   id: true,
   createdAt: true,
+  updatedAt: true,
+  currentBookings: true,
 });
 
 export const insertProcedureSchema = createInsertSchema(procedures).omit({

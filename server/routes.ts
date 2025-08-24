@@ -11,7 +11,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
+      let user = await storage.getUser(userId);
+      if (user && !user.role) {
+        // Set user as admin if they don't have a role yet
+        user = await storage.updateUser(userId, { role: 'admin' });
+      }
       res.json(user);
     } catch (error) {
       console.error("Error fetching user:", error);
@@ -715,15 +719,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/timeslots", isAuthenticated, async (req, res) => {
     try {
       const user = (req as any).user;
-      if (user.claims.role !== 'admin') {
+      const userId = user.claims.sub;
+      
+      // Check user role from database instead of claims
+      const dbUser = await storage.getUser(userId);
+      console.log("Creating time slot - DB user role:", dbUser?.role);
+      console.log("Request body:", JSON.stringify(req.body, null, 2));
+      
+      if (dbUser?.role !== 'admin') {
+        console.log("Access denied - user is not admin in database");
         return res.status(403).json({ message: "Admin access required" });
       }
       
+      console.log("Creating time slot with data:", req.body);
       const timeSlot = await storage.createTimeSlot(req.body);
+      console.log("Time slot created successfully:", timeSlot);
       res.status(201).json(timeSlot);
     } catch (error) {
       console.error("Error creating timeslot:", error);
-      res.status(500).json({ message: "Failed to create timeslot" });
+      const err = error as Error;
+      console.error("Error details:", err.message);
+      console.error("Stack trace:", err.stack);
+      res.status(500).json({ message: "Failed to create timeslot", error: err.message });
     }
   });
 
