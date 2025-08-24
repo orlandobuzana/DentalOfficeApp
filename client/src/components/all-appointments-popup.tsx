@@ -171,7 +171,7 @@ END:VCALENDAR`;
           </DialogDescription>
         </DialogHeader>
         
-        <div className="flex-1 overflow-y-auto pr-2">
+        <div className="flex-1 overflow-y-auto pr-2 max-h-[60vh] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400">
           {isLoading ? (
             <div className="space-y-4">
               {[...Array(5)].map((_, i) => (
