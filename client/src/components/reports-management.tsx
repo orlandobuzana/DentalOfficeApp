@@ -6,9 +6,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { BarChart3, FileText, Users, CreditCard, Download, Calendar, TrendingUp, FileDown } from "lucide-react";
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
-import * as XLSX from 'xlsx';
 
 interface ReportData {
   appointments?: {
@@ -63,33 +60,58 @@ export function ReportsManagement() {
     setShowResults(true);
   };
 
-  const exportToPDF = () => {
+  const exportToPDF = async () => {
     try {
-      console.log('PDF Export clicked, reportData:', !!reportData);
+      // Dynamic import to ensure libraries load properly
+      const jsPDF = (await import('jspdf')).default;
+      await import('jspdf-autotable');
+      
+      const doc = new jsPDF();
+      let content = '';
       
       if (!reportData) {
-        console.log('No report data, creating sample PDF...');
-        const doc = new jsPDF();
-        doc.setFontSize(16);
-        doc.text('No Report Data Available', 20, 20);
-        doc.setFontSize(12);
-        doc.text('Please generate a report first using the "Generate Report" button above.', 20, 40);
-        doc.text('Once you have data, the PDF export will include:', 20, 60);
-        doc.text('• Summary statistics', 30, 80);
-        doc.text('• Detailed data tables', 30, 95);
-        doc.text('• Professional formatting', 30, 110);
+        content = `DENTAL PRACTICE REPORT
         
-        const filename = `no-report-data-${new Date().getTime()}.pdf`;
-        console.log('Saving PDF with filename:', filename);
-        doc.save(filename);
-        return;
+No Report Data Available
+
+Please follow these steps:
+1. Select a report type (Appointments, Financial, or Patients)
+2. Choose your date range
+3. Click "Generate Report"
+4. Export will then include full data with:
+   • Summary statistics
+   • Detailed data tables
+   • Professional formatting
+
+Generated: ${new Date().toLocaleString()}`;
+      } else {
+        content = generateReportContent(reportData, reportType, startDate, endDate);
       }
       
-      console.log('Creating PDF with report data...');
+      // Add content to PDF
+      doc.setFontSize(14);
+      const lines = content.split('\n');
+      let yPos = 20;
+      
+      lines.forEach((line) => {
+        if (yPos > 280) {
+          doc.addPage();
+          yPos = 20;
+        }
+        doc.text(line, 20, yPos);
+        yPos += 7;
+      });
+      
+      const filename = reportData 
+        ? `dental-${reportType}-report-${new Date().toISOString().split('T')[0]}.pdf`
+        : `no-data-instructions-${Date.now()}.pdf`;
+      
+      doc.save(filename);
+      
     } catch (error) {
       console.error('PDF export error:', error);
-      alert('PDF export failed. Check browser console for details.');
-      return;
+      // Fallback to text file if PDF fails
+      downloadAsText(reportData ? generateReportContent(reportData, reportType, startDate, endDate) : 'No report data available. Generate a report first.');
     }
 
     const doc = new jsPDF();
@@ -225,29 +247,46 @@ export function ReportsManagement() {
     doc.save(filename);
   };
 
-  const exportToExcel = () => {
-    if (!reportData) {
-      // Create a sample Excel file if no data is available
+  const exportToExcel = async () => {
+    try {
+      // Dynamic import
+      const XLSX = await import('xlsx');
+      
       const workbook = XLSX.utils.book_new();
       
-      const noDataSheet = XLSX.utils.aoa_to_sheet([
-        ['No Report Data Available'],
-        [''],
-        ['Instructions:'],
-        ['1. Select a report type (Appointments, Financial, or Patients)'],
-        ['2. Choose your date range'],
-        ['3. Click "Generate Report"'],
-        ['4. Once data is loaded, export will include full data'],
-        [''],
-        ['Report Types Available:'],
-        ['• Appointments: Shows appointment statistics and details'],
-        ['• Financial: Shows payment data and revenue analysis'],
-        ['• Patients: Shows patient registration and demographic data']
-      ]);
+      if (!reportData) {
+        const instructionsData = [
+          ['No Report Data Available'],
+          [''],
+          ['Instructions:'],
+          ['1. Select a report type (Appointments, Financial, or Patients)'],
+          ['2. Choose your date range'],
+          ['3. Click "Generate Report"'],
+          ['4. Export will then include full data'],
+          [''],
+          ['Report Types:'],
+          ['• Appointments: Statistics and appointment details'],
+          ['• Financial: Payment data and revenue analysis'],
+          ['• Patients: Registration and demographic data']
+        ];
+        
+        const sheet = XLSX.utils.aoa_to_sheet(instructionsData);
+        XLSX.utils.book_append_sheet(workbook, sheet, 'Instructions');
+      } else {
+        // Add report data sheets
+        addDataToWorkbook(workbook, reportData, reportType);
+      }
       
-      XLSX.utils.book_append_sheet(workbook, noDataSheet, 'Instructions');
-      XLSX.writeFile(workbook, 'no-report-data.xlsx');
-      return;
+      const filename = reportData 
+        ? `dental-${reportType}-report-${new Date().toISOString().split('T')[0]}.xlsx`
+        : `no-data-instructions-${Date.now()}.xlsx`;
+      
+      XLSX.writeFile(workbook, filename);
+      
+    } catch (error) {
+      console.error('Excel export error:', error);
+      // Fallback to CSV
+      downloadAsCSV(reportData ? generateCSVContent(reportData, reportType) : 'No report data available');
     }
 
     const workbook = XLSX.utils.book_new();
@@ -352,6 +391,93 @@ export function ReportsManagement() {
     // Save Excel file
     const filename = `dental-${reportType}-report-${currentDate}.xlsx`;
     XLSX.writeFile(workbook, filename);
+  };
+
+  // Helper functions for generating content
+  const generateReportContent = (data: any, type: string, start: string, end: string) => {
+    const dateRange = start && end ? `${start} to ${end}` : 'All time';
+    let content = `DENTAL PRACTICE REPORT\n\nReport Type: ${type.toUpperCase()}\nDate Range: ${dateRange}\nGenerated: ${new Date().toLocaleString()}\n\n`;
+    
+    if (type === 'appointments' && data.appointments) {
+      content += `APPOINTMENTS SUMMARY\n`;
+      content += `Total Appointments: ${data.appointments.totalAppointments || 0}\n`;
+      content += `Confirmed: ${data.appointments.confirmedAppointments || 0}\n`;
+      content += `Pending: ${data.appointments.pendingAppointments || 0}\n\n`;
+      
+      if (data.appointments.appointments?.length > 0) {
+        content += `APPOINTMENT DETAILS\n`;
+        data.appointments.appointments.forEach((apt: any, i: number) => {
+          content += `${i + 1}. ${apt.treatmentType || 'N/A'} - ${apt.doctorName || 'N/A'} - ${apt.appointmentDate || 'N/A'} ${apt.appointmentTime || 'N/A'} - ${apt.status || 'N/A'}\n`;
+        });
+      }
+    }
+    
+    return content;
+  };
+
+  const generateCSVContent = (data: any, type: string) => {
+    if (type === 'appointments' && data.appointments?.appointments) {
+      let csv = 'Patient ID,Doctor,Treatment,Date,Time,Status\n';
+      data.appointments.appointments.forEach((apt: any) => {
+        csv += `"${apt.patientId || 'N/A'}","${apt.doctorName || 'N/A'}","${apt.treatmentType || 'N/A'}","${apt.appointmentDate || 'N/A'}","${apt.appointmentTime || 'N/A'}","${apt.status || 'N/A'}"\n`;
+      });
+      return csv;
+    }
+    return 'No data available';
+  };
+
+  const addDataToWorkbook = async (workbook: any, data: any, type: string) => {
+    const XLSX = await import('xlsx');
+    
+    if (type === 'appointments' && data.appointments) {
+      // Summary sheet
+      const summaryData = [
+        ['Appointments Report Summary'],
+        ['Total Appointments', data.appointments.totalAppointments || 0],
+        ['Confirmed', data.appointments.confirmedAppointments || 0],
+        ['Pending', data.appointments.pendingAppointments || 0]
+      ];
+      const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+      XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary');
+      
+      // Details sheet
+      if (data.appointments.appointments?.length > 0) {
+        const appointmentData = data.appointments.appointments.map((apt: any) => ({
+          'Patient ID': apt.patientId || 'N/A',
+          'Doctor': apt.doctorName || 'N/A',
+          'Treatment': apt.treatmentType || 'N/A',
+          'Date': apt.appointmentDate || 'N/A',
+          'Time': apt.appointmentTime || 'N/A',
+          'Status': apt.status || 'N/A'
+        }));
+        const detailSheet = XLSX.utils.json_to_sheet(appointmentData);
+        XLSX.utils.book_append_sheet(workbook, detailSheet, 'Appointments');
+      }
+    }
+  };
+
+  const downloadAsText = (content: string) => {
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `dental-report-${Date.now()}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const downloadAsCSV = (content: string) => {
+    const blob = new Blob([content], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `dental-report-${Date.now()}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const formatCurrency = (cents: number) => {
