@@ -40,6 +40,11 @@ interface TimeSlot {
   time: string;
   isAvailable: boolean;
   doctorName: string;
+  slotType: string;
+  duration: number;
+  maxBookings: number;
+  currentBookings: number;
+  notes?: string;
   createdAt: string;
 }
 
@@ -48,6 +53,10 @@ const timeSlotSchema = z.object({
   time: z.string().min(1, "Time is required"),
   isAvailable: z.boolean().default(true),
   doctorName: z.string().min(1, "Doctor name is required"),
+  slotType: z.string().default('general'),
+  duration: z.number().default(60),
+  maxBookings: z.number().default(1),
+  notes: z.string().optional(),
 });
 
 type TimeSlotData = z.infer<typeof timeSlotSchema>;
@@ -77,6 +86,10 @@ export default function CalendarManager({ isOpen, onClose }: CalendarManagerProp
       time: "",
       isAvailable: true,
       doctorName: "",
+      slotType: "general",
+      duration: 60,
+      maxBookings: 1,
+      notes: "",
     },
   });
 
@@ -202,6 +215,10 @@ export default function CalendarManager({ isOpen, onClose }: CalendarManagerProp
         time,
         doctorName: data.doctorName,
         isAvailable: true,
+        slotType: 'general',
+        duration: 30,
+        maxBookings: 1,
+        notes: '',
       }));
       await apiRequest('POST', '/api/timeslots/bulk', { timeSlots: slots });
     },
@@ -314,7 +331,7 @@ export default function CalendarManager({ isOpen, onClose }: CalendarManagerProp
               </CardHeader>
               <CardContent>
                 <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                     <FormField
                       control={form.control}
                       name="date"
@@ -383,6 +400,87 @@ export default function CalendarManager({ isOpen, onClose }: CalendarManagerProp
                       )}
                     />
 
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="slotType"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Slot Type</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select slot type" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="general">General Appointment</SelectItem>
+                                <SelectItem value="emergency">Emergency</SelectItem>
+                                <SelectItem value="consultation">Consultation</SelectItem>
+                                <SelectItem value="cleaning">Cleaning</SelectItem>
+                                <SelectItem value="followup">Follow-up</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="duration"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Duration (minutes)</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                placeholder="60" 
+                                {...field}
+                                onChange={(e) => field.onChange(parseInt(e.target.value) || 60)}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="maxBookings"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Max Bookings</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                placeholder="1" 
+                                {...field}
+                                onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="notes"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Notes (Optional)</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Special requirements" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
                     <div className="flex items-end space-x-2">
                       <Button
                         type="submit"
@@ -432,14 +530,28 @@ export default function CalendarManager({ isOpen, onClose }: CalendarManagerProp
                           <div className="flex items-center">
                             <Clock className="w-4 h-4 mr-2 text-gray-500" />
                             <span className="font-medium">{slot.time}</span>
+                            <Badge variant="outline" className="ml-2 text-xs">
+                              {slot.duration || 30}min
+                            </Badge>
                           </div>
                           <Badge variant={slot.isAvailable ? "default" : "secondary"}>
                             {slot.isAvailable ? "Available" : "Blocked"}
                           </Badge>
                         </div>
-                        <div className="flex items-center mb-3">
-                          <User className="w-4 h-4 mr-2 text-gray-500" />
-                          <span className="text-sm text-gray-600">{slot.doctorName}</span>
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center">
+                            <User className="w-4 h-4 mr-2 text-gray-500" />
+                            <span className="text-sm text-gray-600">{slot.doctorName}</span>
+                          </div>
+                          <Badge variant="outline" className="text-xs capitalize">
+                            {slot.slotType || 'general'}
+                          </Badge>
+                        </div>
+                        {slot.notes && (
+                          <p className="text-xs text-gray-500 mb-2">{slot.notes}</p>
+                        )}
+                        <div className="text-xs text-gray-400 mb-2">
+                          Max: {slot.maxBookings || 1} | Current: {slot.currentBookings || 0}
                         </div>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-2">

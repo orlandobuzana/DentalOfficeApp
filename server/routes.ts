@@ -734,15 +734,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Admin access required" });
       }
       
-      const { date, times, doctorName } = req.body;
+      const { timeSlots: slotsData } = req.body;
       const timeSlots = [];
       
-      for (const time of times) {
+      for (const slotData of slotsData) {
         const timeSlot = await storage.createTimeSlot({
-          date,
-          time,
-          doctorName,
-          isAvailable: true
+          date: slotData.date,
+          time: slotData.time,
+          doctorName: slotData.doctorName,
+          isAvailable: slotData.isAvailable || true,
+          slotType: slotData.slotType || 'general',
+          duration: slotData.duration || 30,
+          maxBookings: slotData.maxBookings || 1,
+          notes: slotData.notes || ''
         });
         timeSlots.push(timeSlot);
       }

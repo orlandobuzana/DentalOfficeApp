@@ -97,7 +97,13 @@ export const timeSlots = pgTable("time_slots", {
   time: varchar("time").notNull(),
   isAvailable: boolean("is_available").default(true),
   doctorName: varchar("doctor_name").notNull(),
+  slotType: varchar("slot_type").default('general'), // 'general', 'emergency', 'consultation', 'cleaning', 'followup'
+  duration: integer("duration_minutes").default(60), // Duration in minutes
+  maxBookings: integer("max_bookings").default(1), // How many can book this slot
+  currentBookings: integer("current_bookings").default(0), // Current bookings count
+  notes: text("notes"), // Additional notes about the slot
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // Procedures table
