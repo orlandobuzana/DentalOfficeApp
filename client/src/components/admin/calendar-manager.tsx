@@ -99,13 +99,22 @@ export default function CalendarManager({ isOpen, onClose }: CalendarManagerProp
   
   // Get the next 30 days for display
   const getNext30Days = () => {
-    const dates = [];
-    for (let i = 0; i < 30; i++) {
-      const date = new Date();
-      date.setDate(date.getDate() + i);
-      dates.push(date.toISOString().split('T')[0]);
+    try {
+      const dates = [];
+      const baseDate = new Date();
+      for (let i = 0; i < 30; i++) {
+        const date = new Date(baseDate);
+        date.setDate(baseDate.getDate() + i);
+        const dateString = date.toISOString().split('T')[0];
+        if (dateString) {
+          dates.push(dateString);
+        }
+      }
+      return dates;
+    } catch (error) {
+      console.error('Error generating dates:', error);
+      return [today];
     }
-    return dates;
   };
 
   const { data: availableTimeSlots, isLoading } = useQuery<TimeSlot[]>({
@@ -277,20 +286,38 @@ export default function CalendarManager({ isOpen, onClose }: CalendarManagerProp
           {/* Date Selector */}
           <div className="flex items-center space-x-4">
             <label className="text-sm font-medium text-gray-700">View Date:</label>
-            <Select value={selectedDate || today} onValueChange={setSelectedDate}>
+            <Select value={selectedDate || today} onValueChange={(value) => {
+              try {
+                setSelectedDate(value);
+              } catch (error) {
+                console.error('Error setting date:', error);
+              }
+            }}>
               <SelectTrigger className="w-48 form-field-animate focus-ring-animate">
-                <SelectValue />
+                <SelectValue placeholder="Select date..." />
               </SelectTrigger>
               <SelectContent>
-                {getNext30Days().map(date => (
-                  <SelectItem key={date} value={date}>
-                    {new Date(date).toLocaleDateString('en-US', { 
-                      weekday: 'short', 
-                      month: 'short', 
-                      day: 'numeric' 
-                    })}
-                  </SelectItem>
-                ))}
+                {getNext30Days().map(date => {
+                  try {
+                    const dateObj = new Date(date + 'T00:00:00');
+                    return (
+                      <SelectItem key={date} value={date}>
+                        {dateObj.toLocaleDateString('en-US', { 
+                          weekday: 'short', 
+                          month: 'short', 
+                          day: 'numeric' 
+                        })}
+                      </SelectItem>
+                    );
+                  } catch (error) {
+                    console.error('Error formatting date:', date, error);
+                    return (
+                      <SelectItem key={date} value={date}>
+                        {date}
+                      </SelectItem>
+                    );
+                  }
+                })}
               </SelectContent>
             </Select>
             <Button onClick={() => setShowForm(true)} className="flex items-center">
