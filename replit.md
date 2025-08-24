@@ -41,6 +41,7 @@ Preferred communication style: Simple, everyday language.
 - **Security**: HTTP-only cookies with secure settings for production
 
 ### Patient Portal Features
+- **One-Click Booking**: Instant appointment booking with visual progress indicator and automated slot finding
 - **Appointment Booking**: Interactive calendar with real-time availability
 - **Appointment Management**: View, track, and manage appointments with "See All" popup and refresh capability
 - **Profile Management**: User profile with Replit integration
@@ -140,6 +141,13 @@ Preferred communication style: Simple, everyday language.
 The application follows modern web development best practices with a focus on type safety, developer experience, and user security. The modular architecture allows for easy maintenance and feature expansion while maintaining performance and reliability.
 
 ## Recent Updates (August 2025)
+
+### One-Click Appointment Booking System (Latest)
+- **Instant Booking Interface**: Streamlined booking for common procedures with visual progress indicators
+  - **Smart Categories**: Emergency, Routine Checkup, New Patient, Follow-up with priority-based scheduling
+  - **Visual Progress**: Multi-step booking process with animated progress bars and status indicators
+  - **Automated Slot Finding**: Intelligent next-available appointment scheduling based on procedure type
+  - **Calendar Integration**: Direct Google Calendar integration after successful booking
 
 ### Advanced File Upload & Communication System
 - **Enhanced File Upload Capabilities**: Increased file size limits to 25MB with intelligent image compression

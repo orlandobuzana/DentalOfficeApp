@@ -8,6 +8,7 @@ import { PaymentHistory } from "@/components/payment-history";
 import { FormsDownload } from "@/components/forms-download";
 import { ReportsManagement } from "@/components/reports-management";
 import { AllAppointmentsPopup } from "@/components/all-appointments-popup";
+import { OneClickBooking } from "@/components/one-click-booking";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -278,6 +279,9 @@ END:VCALENDAR`;
 
           {/* Sidebar */}
           <div className="space-y-6">
+
+            {/* One-Click Booking */}
+            <OneClickBooking />
 
             {/* Quick Actions */}
             <Card className="card-elevated glass-effect">
