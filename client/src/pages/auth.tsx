@@ -77,7 +77,7 @@ export default function Auth() {
   };
 
   const handleAppleLogin = () => {
-    window.location.href = "/api/auth/apple";
+    alert("Apple authentication is not configured yet. Please use email/password or Google login.");
   };
 
   if (isLoading) {

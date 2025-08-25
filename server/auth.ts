@@ -246,17 +246,24 @@ export function setupAuth(app: Express) {
     }
   );
 
-  // Apple OAuth routes
-  app.get("/api/auth/apple",
-    passport.authenticate("apple")
-  );
+  // Apple OAuth routes (only if configured)
+  if (process.env.APPLE_TEAM_ID && process.env.APPLE_CLIENT_ID && process.env.APPLE_KEY_ID) {
+    app.get("/api/auth/apple",
+      passport.authenticate("apple")
+    );
 
-  app.get("/api/auth/apple/callback",
-    passport.authenticate("apple", { failureRedirect: "/login?error=apple" }),
-    (req, res) => {
-      res.redirect("/");
-    }
-  );
+    app.get("/api/auth/apple/callback",
+      passport.authenticate("apple", { failureRedirect: "/login?error=apple" }),
+      (req, res) => {
+        res.redirect("/");
+      }
+    );
+  } else {
+    // Return error if Apple auth is not configured
+    app.get("/api/auth/apple", (req, res) => {
+      res.status(400).json({ message: "Apple authentication is not configured" });
+    });
+  }
 
   app.post("/api/auth/logout", (req, res, next) => {
     req.logout((err) => {
