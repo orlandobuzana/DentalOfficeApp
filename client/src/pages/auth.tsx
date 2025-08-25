@@ -26,14 +26,48 @@ export default function Auth() {
     return null;
   }
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    window.location.href = '/api/auth/login';
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(loginData),
+      });
+
+      if (response.ok) {
+        window.location.href = '/';
+      } else {
+        const error = await response.text();
+        alert(error || 'Login failed');
+      }
+    } catch (error) {
+      alert('Login failed: ' + error);
+    }
   };
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    window.location.href = '/api/auth/register';
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(registerData),
+      });
+
+      if (response.ok) {
+        window.location.href = '/';
+      } else {
+        const error = await response.text();
+        alert(error || 'Registration failed');
+      }
+    } catch (error) {
+      alert('Registration failed: ' + error);
+    }
   };
 
   const handleGoogleLogin = () => {
