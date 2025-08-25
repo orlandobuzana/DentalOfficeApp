@@ -234,17 +234,24 @@ export function setupAuth(app: Express) {
     })(req, res, next);
   });
 
-  // Google OAuth routes
-  app.get("/api/auth/google",
-    passport.authenticate("google", { scope: ["profile", "email"] })
-  );
+  // Google OAuth routes (only if configured)
+  if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+    app.get("/api/auth/google",
+      passport.authenticate("google", { scope: ["profile", "email"] })
+    );
 
-  app.get("/api/auth/google/callback",
-    passport.authenticate("google", { failureRedirect: "/login?error=google" }),
-    (req, res) => {
-      res.redirect("/");
-    }
-  );
+    app.get("/api/auth/google/callback",
+      passport.authenticate("google", { failureRedirect: "/login?error=google" }),
+      (req, res) => {
+        res.redirect("/");
+      }
+    );
+  } else {
+    // Return error if Google auth is not configured
+    app.get("/api/auth/google", (req, res) => {
+      res.status(400).json({ message: "Google authentication is not configured" });
+    });
+  }
 
   // Apple OAuth routes (only if configured)
   if (process.env.APPLE_TEAM_ID && process.env.APPLE_CLIENT_ID && process.env.APPLE_KEY_ID) {

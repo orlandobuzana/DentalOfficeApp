@@ -73,11 +73,11 @@ export default function Auth() {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = "/api/auth/google";
+    alert("Google authentication is not configured yet. Please use email/password login.");
   };
 
   const handleAppleLogin = () => {
-    alert("Apple authentication is not configured yet. Please use email/password or Google login.");
+    alert("Apple authentication is not configured yet. Please use email/password login.");
   };
 
   if (isLoading) {
