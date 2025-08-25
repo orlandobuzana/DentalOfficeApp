@@ -76,7 +76,17 @@ export default function Navigation() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem
-                  onClick={() => window.location.href = '/api/auth/logout'}
+                  onClick={async () => {
+                    try {
+                      await fetch('/api/auth/logout', {
+                        method: 'POST',
+                        credentials: 'include'
+                      });
+                      window.location.href = '/';
+                    } catch (error) {
+                      window.location.href = '/';
+                    }
+                  }}
                   className="text-red-600"
                 >
                   <LogOut className="w-4 h-4 mr-2" />

@@ -261,7 +261,7 @@ export function setupAuth(app: Express) {
   app.post("/api/auth/logout", (req, res, next) => {
     req.logout((err) => {
       if (err) return next(err);
-      res.redirect("/");
+      res.json({ success: true, message: "Logged out successfully" });
     });
   });
   
