@@ -347,18 +347,6 @@ END:VCALENDAR`;
                     Download Forms
                   </button>
 
-                  {/* Become Admin button - only show for non-admin users */}
-                  {user && user.role !== 'admin' && (
-                    <button 
-                      onClick={() => promoteToAdminMutation.mutate()}
-                      disabled={promoteToAdminMutation.isPending}
-                      className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-orange-50 hover:to-red-50 rounded-lg flex items-center transition-all duration-200 hover:transform hover:translate-x-1"
-                    >
-                      <Shield className="w-4 h-4 mr-3 text-orange-500" />
-                      {promoteToAdminMutation.isPending ? 'Promoting...' : 'Become Admin'}
-                    </button>
-                  )}
-
                 </div>
               </CardContent>
             </Card>
