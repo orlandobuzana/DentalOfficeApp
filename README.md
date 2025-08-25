@@ -51,7 +51,7 @@ A comprehensive dental practice management system with patient portal, appointme
 - 🧹 **Cleanup Tools** - Bulk cleanup of missed appointments with selection interface
 
 ### Technical Features
-- 🔐 **Secure Authentication** - Replit Auth with role-based access control  
+- 🔐 **Multi-Provider Authentication** - Email/password, Google OAuth, and Apple Sign In support
 - 🎨 **Modern UI/UX** - Blue-teal gradients, glass morphism, and smooth animations
 - 📱 **Fully Responsive** - Mobile-first design with Tailwind CSS
 - ⚡ **Real-time Updates** - Live appointment and data synchronization
@@ -81,7 +81,7 @@ A comprehensive dental practice management system with patient portal, appointme
 - **TypeScript** with ES modules
 - **PostgreSQL** with Neon Database
 - **Drizzle ORM** for database operations
-- **Replit Auth** with OpenID Connect
+- **Independent Authentication** with OAuth support
 - **Communication APIs** for email/SMS reminders
 - **File Processing** with advanced image compression
 
@@ -109,7 +109,71 @@ NODE_ENV=development
 REPLIT_DOMAINS=your-domain.replit.dev
 ```
 
-### 3. Database Setup
+### 3. OAuth Authentication Setup (Optional)
+
+The application supports Google and Apple Sign In in addition to email/password authentication. OAuth is optional - email/password login works without any additional setup.
+
+#### Google OAuth Setup
+
+1. **Go to Google Cloud Console**
+   - Visit [Google Cloud Console](https://console.cloud.google.com/)
+   - Create a new project or select an existing one
+
+2. **Enable Google+ API**
+   - Go to "APIs & Services" > "Library"
+   - Search for "Google+ API" and enable it
+
+3. **Create OAuth Credentials**
+   - Go to "APIs & Services" > "Credentials"
+   - Click "Create Credentials" > "OAuth client ID"
+   - Choose "Web application"
+   - Add your domain to authorized redirect URIs:
+     - For development: `http://localhost:5000/api/auth/google/callback`
+     - For production: `https://your-domain.com/api/auth/google/callback`
+
+4. **Add to Environment Variables**
+   ```env
+   GOOGLE_CLIENT_ID=your-google-client-id
+   GOOGLE_CLIENT_SECRET=your-google-client-secret
+   ```
+
+#### Apple Sign In Setup
+
+1. **Apple Developer Account**
+   - You need an Apple Developer account ($99/year)
+   - Visit [Apple Developer Portal](https://developer.apple.com/)
+
+2. **Register Your App**
+   - Go to "Certificates, Identifiers & Profiles"
+   - Create a new App ID
+   - Enable "Sign in with Apple" capability
+
+3. **Create Service ID**
+   - Create a new Services ID
+   - Configure it for "Sign in with Apple"
+   - Add your domain and redirect URLs:
+     - For development: `http://localhost:5000/api/auth/apple/callback`
+     - For production: `https://your-domain.com/api/auth/apple/callback`
+
+4. **Generate Private Key**
+   - Create a new key with "Sign in with Apple" enabled
+   - Download the private key file (.p8)
+
+5. **Add to Environment Variables**
+   ```env
+   APPLE_TEAM_ID=your-apple-team-id
+   APPLE_CLIENT_ID=your-apple-service-id
+   APPLE_KEY_ID=your-apple-key-id
+   APPLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYour private key content\n-----END PRIVATE KEY-----"
+   ```
+
+#### OAuth Status
+- **Without OAuth setup**: Email/password login works perfectly
+- **With Google setup**: Google Sign In button becomes functional
+- **With Apple setup**: Apple Sign In button becomes functional
+- **Current behavior**: OAuth buttons show helpful messages when not configured
+
+### 4. Database Setup
 ```bash
 # Push database schema
 npm run db:push
@@ -119,7 +183,7 @@ npm run db:generate
 npm run db:migrate
 ```
 
-### 4. Start Development Server
+### 5. Start Development Server
 ```bash
 npm run dev
 ```
@@ -342,7 +406,7 @@ smilecare-dental/
 │   ├── routes.ts           # API route definitions
 │   ├── storage.ts          # Database operations
 │   ├── db.ts               # Database connection
-│   └── replitAuth.ts       # Authentication setup
+│   └── auth.ts             # Multi-provider authentication setup
 ├── shared/                  # Shared TypeScript types
 │   └── schema.ts           # Database schema definitions
 ├── tests/                   # Test files
@@ -352,9 +416,14 @@ smilecare-dental/
 ## API Endpoints
 
 ### Authentication
-- `GET /api/auth/user` - Get current user
-- `GET /api/login` - Initiate login flow
-- `GET /api/logout` - Logout user
+- `POST /api/auth/register` - Register new user with email/password
+- `POST /api/auth/login` - Login with email/password
+- `POST /api/auth/logout` - Logout user
+- `GET /api/auth/user` - Get current user profile
+- `GET /api/auth/google` - Initiate Google OAuth login
+- `GET /api/auth/apple` - Initiate Apple Sign In login
+- `GET /api/auth/google/callback` - Google OAuth callback
+- `GET /api/auth/apple/callback` - Apple Sign In callback
 
 ### Appointments
 - `GET /api/appointments` - Get user's appointments
