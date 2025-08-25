@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import Navigation from "@/components/navigation";
-import TeamForm from "@/components/admin/team-form";
-import ResourceForm from "@/components/admin/resource-form";
+import TeamList from "@/components/admin/team-list";
+import ResourceList from "@/components/admin/resource-list";
 import ChatbotManager from "@/components/admin/chatbot-manager";
 import CalendarManager from "@/components/admin/calendar-manager";
 import { ProcedureList } from "@/components/admin/procedure-list";
@@ -35,8 +35,8 @@ export default function Admin() {
   const { toast } = useToast();
   const { user, isAuthenticated, isLoading } = useAuth();
   const queryClient = useQueryClient();
-  const [showTeamForm, setShowTeamForm] = useState(false);
-  const [showResourceForm, setShowResourceForm] = useState(false);
+  const [showTeamManager, setShowTeamManager] = useState(false);
+  const [showResourceManager, setShowResourceManager] = useState(false);
   const [showChatbotManager, setShowChatbotManager] = useState(false);
   const [showCalendarManager, setShowCalendarManager] = useState(false);
   const [showProcedures, setShowProcedures] = useState(false);
@@ -350,33 +350,43 @@ export default function Admin() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
-                <Dialog open={showTeamForm} onOpenChange={setShowTeamForm}>
+                <Dialog open={showTeamManager} onOpenChange={setShowTeamManager}>
                   <DialogTrigger asChild>
                     <button className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-600 hover:bg-blue-50 transition-colors group interactive-hover button-animate">
                       <UserPlus className="h-8 w-8 text-gray-400 group-hover:text-blue-600 mb-2 mx-auto" />
-                      <p className="text-sm font-medium text-gray-700 group-hover:text-blue-600">Add Team Member</p>
+                      <p className="text-sm font-medium text-gray-700 group-hover:text-blue-600">Manage Team</p>
                     </button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
+                  <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden">
                     <DialogHeader>
-                      <DialogTitle>Add Team Member</DialogTitle>
+                      <DialogTitle>Team Management</DialogTitle>
+                      <DialogDescription>
+                        Add, edit, and manage your dental team members.
+                      </DialogDescription>
                     </DialogHeader>
-                    <TeamForm onClose={() => setShowTeamForm(false)} />
+                    <div className="overflow-y-auto max-h-[80vh] pr-2">
+                      <TeamList />
+                    </div>
                   </DialogContent>
                 </Dialog>
 
-                <Dialog open={showResourceForm} onOpenChange={setShowResourceForm}>
+                <Dialog open={showResourceManager} onOpenChange={setShowResourceManager}>
                   <DialogTrigger asChild>
                     <button className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-600 hover:bg-blue-50 transition-colors group">
                       <FileText className="h-8 w-8 text-gray-400 group-hover:text-blue-600 mb-2 mx-auto" />
-                      <p className="text-sm font-medium text-gray-700 group-hover:text-blue-600">Add Resource</p>
+                      <p className="text-sm font-medium text-gray-700 group-hover:text-blue-600">Manage Resources</p>
                     </button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
+                  <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden">
                     <DialogHeader>
-                      <DialogTitle>Add Resource</DialogTitle>
+                      <DialogTitle>Resource Management</DialogTitle>
+                      <DialogDescription>
+                        Add, edit, and manage educational resources for your patients.
+                      </DialogDescription>
                     </DialogHeader>
-                    <ResourceForm onClose={() => setShowResourceForm(false)} />
+                    <div className="overflow-y-auto max-h-[80vh] pr-2">
+                      <ResourceList />
+                    </div>
                   </DialogContent>
                 </Dialog>
 

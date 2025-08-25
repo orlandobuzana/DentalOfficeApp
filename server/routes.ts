@@ -311,6 +311,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/team/:id", isAuthenticated, async (req, res) => {
+    try {
+      const user = (req as any).user;
+      const userId = user.claims.sub;
+      
+      // Check user role from database
+      const dbUser = await storage.getUser(userId);
+      if (!dbUser || dbUser.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const { id } = req.params;
+      await storage.deleteTeamMember(id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting team member:", error);
+      res.status(500).json({ 
+        message: "Failed to delete team member",
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
+      });
+    }
+  });
+
   // Resource routes
   app.get("/api/resources", async (req, res) => {
     try {
@@ -345,6 +368,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Full error details:", JSON.stringify(error, null, 2));
       res.status(500).json({ 
         message: "Failed to create resource",
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
+      });
+    }
+  });
+
+  app.put("/api/resources/:id", isAuthenticated, async (req, res) => {
+    try {
+      const user = (req as any).user;
+      const userId = user.claims.sub;
+      
+      // Check user role from database
+      const dbUser = await storage.getUser(userId);
+      if (!dbUser || dbUser.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const { id } = req.params;
+      const resource = await storage.updateResource(id, req.body);
+      
+      if (!resource) {
+        return res.status(404).json({ message: "Resource not found" });
+      }
+      
+      res.json(resource);
+    } catch (error) {
+      console.error("Error updating resource:", error);
+      res.status(500).json({ 
+        message: "Failed to update resource",
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
+      });
+    }
+  });
+
+  app.delete("/api/resources/:id", isAuthenticated, async (req, res) => {
+    try {
+      const user = (req as any).user;
+      const userId = user.claims.sub;
+      
+      // Check user role from database
+      const dbUser = await storage.getUser(userId);
+      if (!dbUser || dbUser.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const { id } = req.params;
+      await storage.deleteResource(id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting resource:", error);
+      res.status(500).json({ 
+        message: "Failed to delete resource",
         error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
       });
     }
