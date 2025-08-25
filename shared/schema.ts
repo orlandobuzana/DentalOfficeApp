@@ -28,11 +28,14 @@ export const sessions = pgTable(
 // User storage table.
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  email: varchar("email").unique(),
+  email: varchar("email").unique().notNull(),
+  password: varchar("password"), // For local auth, null for OAuth users
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
   role: varchar("role").notNull().default('patient'), // 'patient' or 'admin'
+  provider: varchar("provider").notNull().default('local'), // 'local', 'google', 'apple', 'replit'
+  providerId: varchar("provider_id"), // External provider ID
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -242,6 +245,7 @@ export const insertPaymentSchema = createInsertSchema(payments).omit({
 });
 
 // Types
+export type InsertUser = typeof users.$inferInsert;
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
 

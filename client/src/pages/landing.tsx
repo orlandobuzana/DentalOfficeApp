@@ -19,18 +19,14 @@ export default function Landing() {
               patient portal, and educational resources all in one place.
             </p>
             <div className="space-y-4">
-              <Button 
-                onClick={() => window.location.href = '/api/login'}
-                size="lg"
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg"
-              >
-                Sign In to Get Started
-              </Button>
-              <div>
-                <Link href="/forgot-password" className="text-blue-600 hover:text-blue-500 text-sm font-medium">
-                  Forgot your password?
-                </Link>
-              </div>
+              <Link href="/login">
+                <Button 
+                  size="lg"
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg"
+                >
+                  Sign In to Get Started
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
