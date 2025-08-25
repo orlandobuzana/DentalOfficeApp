@@ -11,7 +11,7 @@ import { useLocation } from "wouter";
 
 export default function Auth() {
   const [, setLocation] = useLocation();
-  const { user, isLoading, loginMutation, registerMutation } = useAuth();
+  const { user, isLoading, isAuthenticated } = useAuth();
   const [loginData, setLoginData] = useState({ email: "", password: "" });
   const [registerData, setRegisterData] = useState({
     email: "",
@@ -28,12 +28,12 @@ export default function Auth() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    loginMutation.mutate(loginData);
+    window.location.href = '/api/auth/login';
   };
 
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
-    registerMutation.mutate(registerData);
+    window.location.href = '/api/auth/register';
   };
 
   const handleGoogleLogin = () => {
@@ -138,13 +138,6 @@ export default function Auth() {
                       </div>
                     </div>
 
-                    {loginMutation.isError && (
-                      <Alert variant="destructive">
-                        <AlertDescription>
-                          {loginMutation.error?.message || "Login failed"}
-                        </AlertDescription>
-                      </Alert>
-                    )}
 
                     <form onSubmit={handleLogin} className="space-y-4">
                       <div className="space-y-2">
@@ -186,12 +179,8 @@ export default function Auth() {
                       <Button
                         type="submit"
                         className="w-full"
-                        disabled={loginMutation.isPending}
                         data-testid="button-sign-in"
                       >
-                        {loginMutation.isPending ? (
-                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                        ) : null}
                         Sign In
                       </Button>
                     </form>
@@ -233,13 +222,6 @@ export default function Auth() {
                       </div>
                     </div>
 
-                    {registerMutation.isError && (
-                      <Alert variant="destructive">
-                        <AlertDescription>
-                          {registerMutation.error?.message || "Registration failed"}
-                        </AlertDescription>
-                      </Alert>
-                    )}
 
                     <form onSubmit={handleRegister} className="space-y-4">
                       <div className="grid grid-cols-2 gap-4">
@@ -329,12 +311,8 @@ export default function Auth() {
                       <Button
                         type="submit"
                         className="w-full"
-                        disabled={registerMutation.isPending}
                         data-testid="button-sign-up"
                       >
-                        {registerMutation.isPending ? (
-                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                        ) : null}
                         Create Account
                       </Button>
                     </form>

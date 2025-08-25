@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export default function Navigation() {
-  const { user, logoutMutation } = useAuth();
+  const { user } = useAuth();
   const [location] = useLocation();
 
   const isActive = (path: string) => {
@@ -76,12 +76,11 @@ export default function Navigation() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem
-                  onClick={() => logoutMutation.mutate()}
+                  onClick={() => window.location.href = '/api/auth/logout'}
                   className="text-red-600"
-                  disabled={logoutMutation.isPending}
                 >
                   <LogOut className="w-4 h-4 mr-2" />
-                  {logoutMutation.isPending ? "Signing Out..." : "Sign Out"}
+                  Sign Out
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
