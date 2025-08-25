@@ -21,7 +21,7 @@ export default function Auth() {
   });
 
   // Redirect if already authenticated
-  if (!isLoading && user) {
+  if (!isLoading && isAuthenticated) {
     setLocation("/");
     return null;
   }
@@ -34,11 +34,12 @@ export default function Auth() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(loginData),
       });
 
       if (response.ok) {
-        window.location.href = '/';
+        window.location.reload();
       } else {
         const error = await response.text();
         alert(error || 'Login failed');
@@ -56,11 +57,12 @@ export default function Auth() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(registerData),
       });
 
       if (response.ok) {
-        window.location.href = '/';
+        window.location.reload();
       } else {
         const error = await response.text();
         alert(error || 'Registration failed');
