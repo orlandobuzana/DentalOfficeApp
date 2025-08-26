@@ -104,9 +104,7 @@ Create a `.env` file in the root directory:
 ```env
 DATABASE_URL=postgresql://username:password@host:port/database
 SESSION_SECRET=your-secure-session-secret-key
-REPL_ID=your-replit-id
 NODE_ENV=development
-REPLIT_DOMAINS=your-domain.replit.dev
 ```
 
 ### 3. OAuth Authentication Setup (Optional)
