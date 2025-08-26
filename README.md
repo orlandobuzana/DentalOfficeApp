@@ -90,7 +90,6 @@ A comprehensive dental practice management system with patient portal, appointme
 ### Prerequisites
 - Node.js 18 or higher
 - PostgreSQL database (Neon recommended)
-- Replit account for authentication
 
 ### 1. Clone and Install
 ```bash
@@ -191,7 +190,7 @@ The application will be available at `http://localhost:5000`
 ## Application Overview
 
 ### Patient Workflow
-1. **Login** - Secure authentication via Replit Auth
+1. **Login** - Secure authentication via email/password or OAuth
 2. **Dashboard** - View upcoming appointments and quick actions
 3. **Book Appointment** - Select procedure, date, time, and doctor
 4. **Calendar Reminder** - Add appointment to device calendar
@@ -326,7 +325,7 @@ Update the brand name "SmileCare" in:
 > Demo: `https://your-app-name.replit.dev`
 > 
 > **Test Credentials**:
-> - **Patient Access**: Login with any Replit account
+> - **Patient Access**: Register with email/password or use OAuth
 > - **Admin Access**: Use "Become Admin" button in patient dashboard
 > - **Features to Test**: 
 >   - Book appointments with "New Patient Consultation" option
