@@ -1,0 +1,26 @@
+# Development override for docker-compose.yml
+version: '3.8'
+
+services:
+  app:
+    build:
+      target: builder
+    environment:
+      NODE_ENV: development
+    volumes:
+      # Mount source code for hot reload
+      - .:/app
+      - /app/node_modules
+    command: npm run dev
+    ports:
+      - "5000:5000"
+      - "24678:24678"  # Vite HMR port
+    
+  postgres:
+    ports:
+      - "5432:5432"
+    # Development database with more permissive settings
+    environment:
+      POSTGRES_DB: smilecare_dental_dev
+      POSTGRES_USER: dental_dev
+      POSTGRES_PASSWORD: dev_password_123

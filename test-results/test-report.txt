@@ -1,11 +1,11 @@
 SmileCare Dental - Test Report
-Generated: Sat Aug 23 11:26:28 PM UTC 2025
+Generated: Tue Aug 26 02:14:35 AM UTC 2025
 
 Test Results Summary:
 - Total tests: 7
-- Passed: 6  
-- Failed: 1
-- Success rate: 85%
+- Passed: 5  
+- Failed: 2
+- Success rate: 71%
 
 Test Details:
 1. TypeScript Compilation: VARIES

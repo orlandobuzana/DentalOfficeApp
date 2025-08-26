@@ -1,0 +1,38 @@
+# Production override for docker-compose.yml
+version: '3.8'
+
+services:
+  app:
+    restart: always
+    environment:
+      NODE_ENV: production
+    # Remove dev volumes, use only built code
+    volumes:
+      - app_uploads:/app/uploads
+    # Production health checks
+    healthcheck:
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    
+  postgres:
+    restart: always
+    # Production database settings
+    environment:
+      POSTGRES_DB: smilecare_dental
+      POSTGRES_USER: dental_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-in-production}
+    # Don't expose database port in production
+    ports: []
+    # Production health checks
+    healthcheck:
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres_data:
+    driver: local
+  app_uploads:
+    driver: local

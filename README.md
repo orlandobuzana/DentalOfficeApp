@@ -87,26 +87,128 @@ A comprehensive dental practice management system with patient portal, appointme
 
 ## Installation & Setup
 
-### Prerequisites
+### Option 1: Docker Setup (Recommended)
+
+Docker ensures complete compatibility and eliminates environment issues.
+
+#### Prerequisites
+- Docker and Docker Compose installed
+- Git
+
+#### Quick Start with Docker
+```bash
+# Clone the repository
+git clone <repository-url>
+cd smilecare-dental
+
+# Start the entire stack (app + database)
+docker-compose up -d
+
+# Initialize database schema
+docker-compose exec app npm run db:push
+
+# View logs (optional)
+docker-compose logs -f app
+```
+
+The application will be available at `http://localhost:5000`
+
+#### Docker Environment Configuration
+Edit the `docker-compose.yml` file to configure environment variables:
+
+```yaml
+environment:
+  NODE_ENV: production
+  DATABASE_URL: postgresql://dental_user:dental_secure_pass_123@postgres:5432/smilecare_dental
+  SESSION_SECRET: your-super-secure-session-secret-change-in-production
+  
+  # OAuth credentials (optional)
+  GOOGLE_CLIENT_ID: your-google-client-id
+  GOOGLE_CLIENT_SECRET: your-google-client-secret
+  APPLE_TEAM_ID: your-apple-team-id
+  APPLE_CLIENT_ID: your-apple-client-id
+  APPLE_KEY_ID: your-apple-key-id
+  APPLE_PRIVATE_KEY: "-----BEGIN PRIVATE KEY-----\nYour key here\n-----END PRIVATE KEY-----"
+```
+
+#### Docker Commands
+```bash
+# Start services
+docker-compose up -d
+
+# Stop services
+docker-compose down
+
+# View logs
+docker-compose logs -f app
+
+# Rebuild after code changes
+docker-compose build app
+docker-compose up -d app
+
+# Access database
+docker-compose exec postgres psql -U dental_user -d smilecare_dental
+
+# Run database migrations
+docker-compose exec app npm run db:push
+
+# Clean everything (removes data!)
+docker-compose down -v
+```
+
+### Option 2: Manual Setup
+
+#### Prerequisites
 - Node.js 18 or higher
 - PostgreSQL database (Neon recommended)
 
-### 1. Clone and Install
+#### Installation Steps
 ```bash
+# Clone and install
 git clone <repository-url>
 cd smilecare-dental
 npm install
+
+# Environment configuration
+cp .env.example .env
+# Edit .env with your configuration
 ```
 
-### 2. Environment Configuration
+#### Environment Configuration
 Create a `.env` file in the root directory:
 ```env
 DATABASE_URL=postgresql://username:password@host:port/database
 SESSION_SECRET=your-secure-session-secret-key
 NODE_ENV=development
+
+# OAuth credentials (optional)
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+APPLE_TEAM_ID=your-apple-team-id
+APPLE_CLIENT_ID=your-apple-client-id
+APPLE_KEY_ID=your-apple-key-id
+APPLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYour key here\n-----END PRIVATE KEY-----"
 ```
 
-### 3. OAuth Authentication Setup (Optional)
+### Passport.js Authentication Configuration
+
+The application uses **Passport.js** with multiple authentication strategies. All authentication is independent and portable.
+
+#### Core Authentication Features
+- **Local Strategy**: Email/password authentication with bcrypt hashing
+- **Google OAuth**: Google Sign In integration
+- **Apple Sign In**: Apple ID authentication
+- **Session Management**: PostgreSQL-backed sessions with 7-day TTL
+- **Role-Based Access**: User and admin roles with middleware protection
+
+#### Authentication Flow
+1. **Registration**: Users register with email/password or OAuth
+2. **Password Security**: Bcrypt with salt for local accounts
+3. **Session Storage**: Secure PostgreSQL session storage
+4. **OAuth Integration**: Seamless provider linking
+5. **Role Management**: Admin promotion and permission system
+
+#### OAuth Authentication Setup (Optional)
 
 The application supports Google and Apple Sign In in addition to email/password authentication. OAuth is optional - email/password login works without any additional setup.
 
@@ -170,7 +272,15 @@ The application supports Google and Apple Sign In in addition to email/password 
 - **With Apple setup**: Apple Sign In button becomes functional
 - **Current behavior**: OAuth buttons show helpful messages when not configured
 
-### 4. Database Setup
+### Database Setup
+
+#### For Docker Setup
+```bash
+# Initialize database schema (after docker-compose up)
+docker-compose exec app npm run db:push
+```
+
+#### For Manual Setup
 ```bash
 # Push database schema
 npm run db:push
@@ -180,7 +290,15 @@ npm run db:generate
 npm run db:migrate
 ```
 
-### 5. Start Development Server
+### Start Development
+
+#### Docker Development
+```bash
+# Start in development mode
+docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+```
+
+#### Manual Development
 ```bash
 npm run dev
 ```
@@ -209,15 +327,58 @@ The application will be available at `http://localhost:5000`
 
 ## Production Deployment
 
-### Build for Production
+### Docker Production Deployment (Recommended)
+
+#### Build and Deploy
+```bash
+# Build production image
+docker build -t smilecare-dental:latest .
+
+# Run with production configuration
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+# Or deploy to cloud platforms (AWS, GCP, Azure)
+docker tag smilecare-dental:latest your-registry/smilecare-dental:latest
+docker push your-registry/smilecare-dental:latest
+```
+
+#### Production Environment Variables
+```bash
+# Required for production
+DATABASE_URL=postgresql://user:pass@host:5432/db
+SESSION_SECRET=super-secure-random-key-minimum-32-chars
+NODE_ENV=production
+
+# OAuth for production (optional)
+GOOGLE_CLIENT_ID=your-production-google-client-id
+GOOGLE_CLIENT_SECRET=your-production-google-client-secret
+APPLE_TEAM_ID=your-apple-team-id
+APPLE_CLIENT_ID=your-apple-client-id
+APPLE_KEY_ID=your-apple-key-id
+APPLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nProduction key\n-----END PRIVATE KEY-----"
+```
+
+### Manual Production Deployment
+
+#### Build for Production
 ```bash
 npm run build
 ```
 
-### Start Production Server
+#### Start Production Server
 ```bash
 npm start
 ```
+
+### Production Checklist
+- [ ] Set strong `SESSION_SECRET` (minimum 32 characters)
+- [ ] Configure production database with SSL
+- [ ] Set up HTTPS/TLS certificates
+- [ ] Configure OAuth redirect URIs for production domain
+- [ ] Set up monitoring and logging
+- [ ] Configure backup strategy for PostgreSQL
+- [ ] Test all authentication flows
+- [ ] Verify file upload functionality
 
 ## Customization
 
@@ -347,30 +508,58 @@ The application showcases a modern, professional design suitable for medical pra
 
 ## Testing
 
+The application includes a comprehensive test suite covering TypeScript compilation, builds, database schema, API routes, and module imports.
+
 ### Run All Tests
+
+#### Docker Testing
 ```bash
+# Run tests in Docker environment
+docker-compose exec app ./run-tests.sh
+
+# Or build a test image
+docker build -t smilecare-test --target builder .
+docker run --rm smilecare-test ./run-tests.sh
+```
+
+#### Manual Testing
+```bash
+# Make script executable (first time only)
+chmod +x run-tests.sh
+
+# Run comprehensive test suite
 ./run-tests.sh
+
+# Run individual test files
+./test-individual.sh
 ```
 
-### Run Specific Test Suites
+### Test Suite Components
+
+The test runner checks:
+1. **TypeScript Compilation** - Validates all TypeScript code
+2. **Frontend Build** - Ensures Vite build succeeds
+3. **Backend Compilation** - Validates server-side TypeScript
+4. **Database Schema** - Checks Drizzle ORM schema validity
+5. **Module Imports** - Validates import/export structure
+6. **API Routes** - Ensures all required endpoints exist
+7. **Environment Config** - Checks required environment variables
+
+### Test Results
 ```bash
-# Frontend tests
-npm run test:frontend
+# View detailed test report
+cat test-results/test-report.txt
 
-# Backend API tests
-npm run test:backend
-
-# Integration tests
-npm run test:integration
-
-# Database tests
-npm run test:database
+# Current test status: 5/7 tests passing
+# Known issues: TypeScript compilation warnings in Drizzle ORM dependencies (non-blocking)
 ```
 
-### Test Coverage
-```bash
-npm run test:coverage
-```
+### Add New Tests
+Create test files in the `tests/` directory:
+- `frontend.test.js` - Frontend component tests
+- `backend.test.js` - API endpoint tests
+- `integration.test.js` - End-to-end tests
+- `database.test.js` - Database operation tests
 
 ## Scripts
 
